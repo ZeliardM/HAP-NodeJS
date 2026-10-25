@@ -19,10 +19,10 @@ import {
   IPAddress,
   ResourceRequest,
   ResourceRequestType,
-} from '../types'
-import { Accessory, AccessoryEventTypes, Categories, CharacteristicWarningType, MDNSAdvertiser, PublishInfo } from './Accessory'
-import { BonjourHAPAdvertiser } from './Advertiser'
-import { Bridge } from './Bridge'
+} from '../types.js'
+import { Accessory, AccessoryEventTypes, Categories, CharacteristicWarningType, MDNSAdvertiser, PublishInfo } from './Accessory.js'
+import { BonjourHAPAdvertiser } from './Advertiser.js'
+import { Bridge } from './Bridge.js'
 import {
   Access,
   Characteristic,
@@ -32,18 +32,18 @@ import {
   Formats,
   Perms,
   Units,
-} from './Characteristic'
-import { CameraController, Controller, ControllerIdentifier, ControllerServiceMap } from './controller'
-import { createCameraControllerOptions, MOCK_IMAGE } from './controller/CameraController.spec'
-import { HAPHTTPCode, HAPServer, HAPStatus, IdentifyCallback, TLVErrorCode } from './HAPServer'
-import { AccessoryInfo, PairingInformation, PermissionTypes } from './model/AccessoryInfo'
-import { IdentifierCache } from './model/IdentifierCache'
-import { Service } from './Service'
-import { EventedHTTPServer, HAPConnection } from './util/eventedhttp'
-import { HapStatusError } from './util/hapStatusError'
-import { awaitEventOnce, PromiseTimeout } from './util/promise-utils'
-import * as uuid from './util/uuid'
-import { toShortForm } from './util/uuid'
+} from './Characteristic.js'
+import { createCameraControllerOptions, MOCK_IMAGE } from './controller/CameraController.spec.js'
+import { CameraController, Controller, ControllerIdentifier, ControllerServiceMap } from './controller/index.js'
+import { HAPHTTPCode, HAPServer, HAPStatus, IdentifyCallback, TLVErrorCode } from './HAPServer.js'
+import { AccessoryInfo, PairingInformation, PermissionTypes } from './model/AccessoryInfo.js'
+import { IdentifierCache } from './model/IdentifierCache.js'
+import { Service } from './Service.js'
+import { EventedHTTPServer, HAPConnection } from './util/eventedhttp.js'
+import { HapStatusError } from './util/hapStatusError.js'
+import { awaitEventOnce, PromiseTimeout } from './util/promise-utils.js'
+import * as uuid from './util/uuid.js'
+import { toShortForm } from './util/uuid.js'
 
 describe('accessory', () => {
   const TEST_DISPLAY_NAME = 'Test Accessory'

@@ -9,7 +9,7 @@ import {
   ColorUtils,
   Service,
   uuid,
-} from '..'
+} from '../index.js'
 
 /**
  * This example light gives an example how a light with AdaptiveLighting (in AUTOMATIC mode) support

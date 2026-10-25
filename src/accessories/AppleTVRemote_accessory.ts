@@ -2,8 +2,8 @@ import * as http from 'node:http'
 
 import escapeHTML from 'escape-html'
 
-import { Accessory, ButtonState, ButtonType, Categories, RemoteController, uuid } from '..'
-import { GStreamerAudioProducer, GStreamerOptions } from './gstreamer-audioProducer'
+import { Accessory, ButtonState, ButtonType, Categories, RemoteController, uuid } from '../index.js'
+import { GStreamerAudioProducer, GStreamerOptions } from './gstreamer-audioProducer.js'
 
 const remoteUUID = uuid.generate('hap-nodejs:accessories:remote')
 const remote = exports.accessory = new Accessory('Remote', remoteUUID)

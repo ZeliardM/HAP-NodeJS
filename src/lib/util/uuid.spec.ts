@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 
 import { describe, expect, it } from 'vitest'
 
-import { toLongForm, toShortForm, unparse, write } from './uuid'
+import { toLongForm, toShortForm, unparse, write } from './uuid.js'
 
 const uuidString = 'cf47a128-769a-4563-8203-11f307b1926d'
 const uuidBuffer = Buffer.from(uuidString.replace(/-/g, ''), 'hex')

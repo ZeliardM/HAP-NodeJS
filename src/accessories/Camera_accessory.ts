@@ -35,7 +35,7 @@ import {
   uuid,
   VideoCodecType,
   VideoInfo,
-} from '..'
+} from '../index.js'
 
 interface MP4Atom {
   header: Buffer

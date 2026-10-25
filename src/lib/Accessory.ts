@@ -25,8 +25,8 @@ import {
   ResourceRequestType,
   VoidCallback,
   WithUUID,
-} from '../types'
-import { Advertiser, AdvertiserEvent, AvahiAdvertiser, BonjourHAPAdvertiser, CiaoAdvertiser, ResolvedAdvertiser } from './Advertiser'
+} from '../types.js'
+import { Advertiser, AdvertiserEvent, AvahiAdvertiser, BonjourHAPAdvertiser, CiaoAdvertiser, ResolvedAdvertiser } from './Advertiser.js'
 // noinspection JSDeprecatedSymbols
 import {
   Access,
@@ -36,7 +36,7 @@ import {
   describePerms,
   isValidPerms,
   Perms,
-} from './Characteristic'
+} from './Characteristic.js'
 import {
   CameraController,
   Controller,
@@ -44,7 +44,7 @@ import {
   ControllerIdentifier,
   ControllerServiceMap,
   isSerializableController,
-} from './controller'
+} from './controller/index.js'
 import {
   AccessoriesCallback,
   AddPairingCallback,
@@ -61,19 +61,19 @@ import {
   ResourceRequestCallback,
   TLVErrorCode,
   WriteCharacteristicsCallback,
-} from './HAPServer'
-import { AccessoryInfo, PermissionTypes } from './model/AccessoryInfo'
-import { ControllerStorage } from './model/ControllerStorage'
-import { IdentifierCache } from './model/IdentifierCache'
-import { SerializedService, Service, ServiceCharacteristicChange, ServiceEventTypes, ServiceId } from './Service'
-import { checkName } from './util/checkName'
-import { clone } from './util/clone'
-import { EventName, HAPConnection, HAPUsername } from './util/eventedhttp'
-import { HapStatusError } from './util/hapStatusError'
-import { once } from './util/once'
-import { extractHAPStatusFromError, formatOutgoingCharacteristicValue } from './util/request-util'
-import * as uuid from './util/uuid'
-import { toShortForm } from './util/uuid'
+} from './HAPServer.js'
+import { AccessoryInfo, PermissionTypes } from './model/AccessoryInfo.js'
+import { ControllerStorage } from './model/ControllerStorage.js'
+import { IdentifierCache } from './model/IdentifierCache.js'
+import { SerializedService, Service, ServiceCharacteristicChange, ServiceEventTypes, ServiceId } from './Service.js'
+import { checkName } from './util/checkName.js'
+import { clone } from './util/clone.js'
+import { EventName, HAPConnection, HAPUsername } from './util/eventedhttp.js'
+import { HapStatusError } from './util/hapStatusError.js'
+import { once } from './util/once.js'
+import { extractHAPStatusFromError, formatOutgoingCharacteristicValue } from './util/request-util.js'
+import * as uuid from './util/uuid.js'
+import { toShortForm } from './util/uuid.js'
 
 const debug = createDebug('HAP-NodeJS:Accessory')
 const hksvDebug = createDebug('HAP-NodeJS:HKSV')

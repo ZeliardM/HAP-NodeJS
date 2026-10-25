@@ -6,10 +6,10 @@ import os from 'node:os'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HAPHTTPClient } from '../../test-utils/HAPHTTPClient'
-import { HAPHTTPCode } from '../HAPServer'
-import { EventedHTTPServer, EventedHTTPServerEvent, HAPConnection, HAPConnectionEvent } from './eventedhttp'
-import { awaitEventOnce, PromiseTimeout } from './promise-utils'
+import { HAPHTTPClient } from '../../test-utils/HAPHTTPClient.js'
+import { HAPHTTPCode } from '../HAPServer.js'
+import { EventedHTTPServer, EventedHTTPServerEvent, HAPConnection, HAPConnectionEvent } from './eventedhttp.js'
+import { awaitEventOnce, PromiseTimeout } from './promise-utils.js'
 
 describe('eventedhttp', () => {
   let clients: HAPHTTPClient[]

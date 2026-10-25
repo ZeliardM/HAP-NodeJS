@@ -1,9 +1,9 @@
 // THIS FILE IS AUTO-GENERATED - DO NOT MODIFY
 import { describe, expect, it } from 'vitest'
 
-import { Characteristic } from '../Characteristic'
+import { Characteristic } from '../Characteristic.js'
 
-import './'
+import './index.js'
 
 describe('characteristicDefinitions', () => {
   describe('accessCodeControlPoint', () => {

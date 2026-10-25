@@ -4,11 +4,11 @@ import { format } from 'node:util'
 import createDebug from 'debug'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { AccessoryJsonObject, CharacteristicJsonObject } from '../../types'
-import { Categories } from '../Accessory'
-import { Formats, Perms } from '../Characteristic'
-import { AccessoryInfo } from './AccessoryInfo'
-import { HAPStorage } from './HAPStorage'
+import { AccessoryJsonObject, CharacteristicJsonObject } from '../../types.js'
+import { Categories } from '../Accessory.js'
+import { Formats, Perms } from '../Characteristic.js'
+import { AccessoryInfo } from './AccessoryInfo.js'
+import { HAPStorage } from './HAPStorage.js'
 
 describe('accessoryInfo', () => {
   describe('#load()', () => {

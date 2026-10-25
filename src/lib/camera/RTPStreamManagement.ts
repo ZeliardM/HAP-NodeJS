@@ -1,4 +1,4 @@
-import type { CameraRTPStreamManagement } from '../definitions'
+import type { CameraRTPStreamManagement } from '../definitions/index.js'
 
 import assert from 'node:assert'
 import { Buffer } from 'node:buffer'
@@ -7,17 +7,17 @@ import net from 'node:net'
 
 import createDebug from 'debug'
 
-import { CharacteristicValue } from '../../types'
-import { Access, Characteristic, CharacteristicEventTypes, CharacteristicSetCallback } from '../Characteristic'
-import { CameraController, CameraStreamingDelegate, ResourceRequestReason, StateChangeDelegate } from '../controller'
-import { HAPStatus } from '../HAPServer'
-import { Service } from '../Service'
-import { HAPConnection, HAPConnectionEvent } from '../util/eventedhttp'
-import { HapStatusError } from '../util/hapStatusError'
-import { once } from '../util/once'
-import * as tlv from '../util/tlv'
-import * as uuid from '../util/uuid'
-import RTPProxy from './RTPProxy'
+import { CharacteristicValue } from '../../types.js'
+import { Access, Characteristic, CharacteristicEventTypes, CharacteristicSetCallback } from '../Characteristic.js'
+import { CameraController, CameraStreamingDelegate, ResourceRequestReason, StateChangeDelegate } from '../controller/index.js'
+import { HAPStatus } from '../HAPServer.js'
+import { Service } from '../Service.js'
+import { HAPConnection, HAPConnectionEvent } from '../util/eventedhttp.js'
+import { HapStatusError } from '../util/hapStatusError.js'
+import { once } from '../util/once.js'
+import * as tlv from '../util/tlv.js'
+import * as uuid from '../util/uuid.js'
+import RTPProxy from './RTPProxy.js'
 
 const debug = createDebug('HAP-NodeJS:Camera:RTPStreamManagement')
 // ---------------------------------- TLV DEFINITIONS START ----------------------------------

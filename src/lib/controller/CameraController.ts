@@ -5,7 +5,7 @@ import { EventEmitter } from 'node:events'
 
 import createDebug from 'debug'
 
-import { CharacteristicValue, SessionIdentifier } from '../../types'
+import { CharacteristicValue, SessionIdentifier } from '../../types.js'
 import {
   CameraRecordingConfiguration,
   CameraRecordingOptions,
@@ -20,9 +20,9 @@ import {
   RTPStreamManagementState,
   SnapshotRequest,
   StreamingRequest,
-} from '../camera'
-import { Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback } from '../Characteristic'
-import { DataStreamManagement, HDSProtocolSpecificErrorReason } from '../datastream'
+} from '../camera/index.js'
+import { Characteristic, CharacteristicEventTypes, CharacteristicGetCallback, CharacteristicSetCallback } from '../Characteristic.js'
+import { DataStreamManagement, HDSProtocolSpecificErrorReason } from '../datastream/index.js'
 import {
   CameraOperatingMode,
   CameraRecordingManagement,
@@ -32,11 +32,11 @@ import {
   MotionSensor,
   OccupancySensor,
   Speaker,
-} from '../definitions'
-import { HAPStatus } from '../HAPServer'
-import { Service } from '../Service'
-import { HapStatusError } from '../util/hapStatusError'
-import { ControllerIdentifier, ControllerServiceMap, DefaultControllerType, SerializableController, StateChangeDelegate } from './Controller'
+} from '../definitions/index.js'
+import { HAPStatus } from '../HAPServer.js'
+import { Service } from '../Service.js'
+import { HapStatusError } from '../util/hapStatusError.js'
+import { ControllerIdentifier, ControllerServiceMap, DefaultControllerType, SerializableController, StateChangeDelegate } from './Controller.js'
 
 const debug = createDebug('HAP-NodeJS:Camera:Controller')
 

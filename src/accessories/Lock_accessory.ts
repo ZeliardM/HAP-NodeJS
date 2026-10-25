@@ -6,7 +6,7 @@ import {
   CharacteristicEventTypes,
   Service,
   uuid,
-} from '../'
+} from '../index.js'
 
 // here's a fake hardware device that we'll expose to HomeKit
 const FAKE_LOCK = {

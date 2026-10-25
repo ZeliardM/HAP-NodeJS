@@ -6,8 +6,8 @@ import path from 'node:path'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HAPFileStorage } from './HAPFileStorage'
-import { HAPStorage } from './HAPStorage'
+import { HAPFileStorage } from './HAPFileStorage.js'
+import { HAPStorage } from './HAPStorage.js'
 
 describe('hAPStorage', () => {
   let storagePath: string

@@ -5,7 +5,7 @@ import path from 'node:path'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HAPFileStorage } from './HAPFileStorage'
+import { HAPFileStorage } from './HAPFileStorage.js'
 
 function tempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'hap-nodejs-storage-test-'))

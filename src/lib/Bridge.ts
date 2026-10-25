@@ -1,4 +1,4 @@
-import { Accessory } from './Accessory'
+import { Accessory } from './Accessory.js'
 
 /**
  * Bridge is a special type of HomeKit Accessory that hosts other Accessories "behind" it. This way you

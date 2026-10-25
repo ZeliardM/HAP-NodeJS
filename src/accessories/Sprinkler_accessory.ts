@@ -9,7 +9,7 @@ import {
   NodeCallback,
   Service,
   uuid,
-} from '..'
+} from '../index.js'
 
 const SPRINKLER = {
   active: false,

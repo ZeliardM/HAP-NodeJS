@@ -8,7 +8,7 @@ import {
   Service,
   uuid,
   VoidCallback,
-} from '..'
+} from '../index.js'
 
 const FAKE_GARAGE = {
   opened: false,

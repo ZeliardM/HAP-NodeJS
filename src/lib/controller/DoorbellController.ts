@@ -1,10 +1,10 @@
-import type { Doorbell } from '../definitions'
+import type { Doorbell } from '../definitions/index.js'
 
-import { EventTriggerOption } from '../camera'
-import { Characteristic } from '../Characteristic'
-import { Service } from '../Service'
-import { CameraController, CameraControllerOptions, CameraControllerServiceMap } from './CameraController'
-import { ControllerServiceMap } from './Controller'
+import { EventTriggerOption } from '../camera/index.js'
+import { Characteristic } from '../Characteristic.js'
+import { Service } from '../Service.js'
+import { CameraController, CameraControllerOptions, CameraControllerServiceMap } from './CameraController.js'
+import { ControllerServiceMap } from './Controller.js'
 
 /**
  * Options which are additionally supplied for a {@link DoorbellController}.

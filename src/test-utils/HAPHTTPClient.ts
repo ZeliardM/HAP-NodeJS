@@ -7,12 +7,12 @@ import { createConnection, Socket } from 'node:net'
 import { HeaderObject, HTTPParser } from 'http-parser-js'
 import { expect } from 'vitest'
 
-import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types'
-import { HAPHTTPCode, HAPPairingHTTPCode } from '../lib/HAPServer'
-import { PairingInformation, PermissionTypes } from '../lib/model/AccessoryInfo'
-import { HAPEncryption, HAPUsername } from '../lib/util/eventedhttp'
-import * as hapCrypto from '../lib/util/hapCrypto'
-import * as tlv from '../lib/util/tlv'
+import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types.js'
+import { HAPHTTPCode, HAPPairingHTTPCode } from '../lib/HAPServer.js'
+import { PairingInformation, PermissionTypes } from '../lib/model/AccessoryInfo.js'
+import { HAPEncryption, HAPUsername } from '../lib/util/eventedhttp.js'
+import * as hapCrypto from '../lib/util/hapCrypto.js'
+import * as tlv from '../lib/util/tlv.js'
 import {
   AccessoriesResponse,
   CharacteristicId,
@@ -21,9 +21,9 @@ import {
   CharacteristicsWriteResponse,
   PrepareWriteRequest,
   ResourceRequest,
-} from '../types'
-import { HAPHTTPError } from './HAPHTTPError'
-import { TLVError } from './tlvError'
+} from '../types.js'
+import { HAPHTTPError } from './HAPHTTPError.js'
+import { TLVError } from './tlvError.js'
 
 export interface HTTPResponse<T = Buffer> {
   shouldKeepAlive: boolean

@@ -1,6 +1,6 @@
-import { CharacteristicValue, Nullable } from '../../types'
-import { CharacteristicProps, Formats } from '../Characteristic'
-import { HAPStatus, IsKnownHAPStatusError } from '../HAPServer'
+import { CharacteristicValue, Nullable } from '../../types.js'
+import { CharacteristicProps, Formats } from '../Characteristic.js'
+import { HAPStatus, IsKnownHAPStatusError } from '../HAPServer.js'
 
 /**
  * Prepares the characteristic value to be sent to the HomeKit controller.

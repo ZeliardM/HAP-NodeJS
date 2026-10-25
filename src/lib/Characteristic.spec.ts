@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { CharacteristicWarningType } from './Accessory'
+import { CharacteristicWarningType } from './Accessory.js'
 import {
   Access,
   Characteristic,
@@ -17,11 +17,11 @@ import {
   Perms,
   SerializedCharacteristic,
   Units,
-} from './Characteristic'
-import { SelectedRTPStreamConfiguration } from './definitions'
-import { HAPStatus } from './HAPServer'
-import { HapStatusError } from './util/hapStatusError'
-import * as uuid from './util/uuid'
+} from './Characteristic.js'
+import { SelectedRTPStreamConfiguration } from './definitions/index.js'
+import { HAPStatus } from './HAPServer.js'
+import { HapStatusError } from './util/hapStatusError.js'
+import * as uuid from './util/uuid.js'
 
 function createCharacteristic(type: Formats, customUUID?: string): Characteristic {
   return new Characteristic('Test', customUUID || uuid.generate('Foo'), {

@@ -8,8 +8,8 @@ import {
   Service,
   uuid,
   VoidCallback,
-} from '..'
-import { Nullable } from '../types'
+} from '../index.js'
+import { Nullable } from '../types.js'
 
 const err: Nullable<Error> = null // in case there were any problems
 

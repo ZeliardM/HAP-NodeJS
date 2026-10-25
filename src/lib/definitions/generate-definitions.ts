@@ -6,8 +6,8 @@ import process from 'node:process'
 import { Command } from 'commander'
 import * as plist from 'simple-plist'
 
-import { Access, Characteristic, Formats, Units } from '../Characteristic'
-import { toLongForm } from '../util/uuid'
+import { Access, Characteristic, Formats, Units } from '../Characteristic.js'
+import { toLongForm } from '../util/uuid.js'
 import {
   CharacteristicClassAdditions,
   CharacteristicDeprecatedNames,
@@ -22,9 +22,9 @@ import {
   ServiceManualAdditions,
   ServiceNameOverrides,
   ServiceSinceInformation,
-} from './generator-configuration'
+} from './generator-configuration.js'
 
-import './CharacteristicDefinitions'
+import './CharacteristicDefinitions.js'
 
 // noinspection JSUnusedLocalSymbols
 
@@ -221,7 +221,7 @@ for (const definition of Object.values(categories)) {
   }
 }
 
-const characteristicOutput = fs.createWriteStream(path.join(__dirname, 'CharacteristicDefinitions.ts'))
+const characteristicOutput = fs.createWriteStream(path.join(import.meta.dirname, 'CharacteristicDefinitions.ts'))
 
 characteristicOutput.write('// THIS FILE IS AUTO-GENERATED - DO NOT MODIFY\n')
 characteristicOutput.write(`// V=${plistData.Version}\n`)
@@ -417,7 +417,7 @@ writeCharacteristicTestFile()
  * Services
  */
 
-const serviceOutput = fs.createWriteStream(path.join(__dirname, 'ServiceDefinitions.ts'))
+const serviceOutput = fs.createWriteStream(path.join(import.meta.dirname, 'ServiceDefinitions.ts'))
 
 serviceOutput.write('// THIS FILE IS AUTO-GENERATED - DO NOT MODIFY\n')
 serviceOutput.write(`// V=${plistData.Version}\n`)
@@ -662,7 +662,7 @@ function generatePermsString(id: string, propertiesBitMap: number): string {
 }
 
 function checkWrittenVersion(filePath: string, parsingVersion: number): boolean {
-  filePath = path.resolve(__dirname, filePath)
+  filePath = path.resolve(import.meta.dirname, filePath)
 
   const content = fs.readFileSync(filePath, { encoding: 'utf8' }).split('\n', 3)
   const v = content[1]
@@ -675,7 +675,7 @@ function checkWrittenVersion(filePath: string, parsingVersion: number): boolean 
 }
 
 function rewriteProperties(className: string, properties: [key: string, value: GeneratedCharacteristic | GeneratedService][]): void {
-  const filePath = path.resolve(__dirname, `../${className}.ts`)
+  const filePath = path.resolve(import.meta.dirname, `../${className}.ts`)
   if (!fs.existsSync(filePath)) {
     throw new Error(`File '${filePath}' does not exist!`)
   }
@@ -768,7 +768,7 @@ function rewriteProperties(className: string, properties: [key: string, value: G
 function writeCharacteristicTestFile(): void {
   const characteristics = Object.values(generatedCharacteristics).sort((a, b) => a.className.localeCompare(b.className))
 
-  const testOutput = fs.createWriteStream(path.resolve(__dirname, './CharacteristicDefinitions.spec.ts'), { encoding: 'utf8' })
+  const testOutput = fs.createWriteStream(path.resolve(import.meta.dirname, './CharacteristicDefinitions.spec.ts'), { encoding: 'utf8' })
   testOutput.write('// THIS FILE IS AUTO-GENERATED - DO NOT MODIFY\n')
   testOutput.write('import { describe, expect, it } from "vitest";\n')
   testOutput.write('import "./";\n\n')
@@ -798,7 +798,7 @@ function writeCharacteristicTestFile(): void {
 function writeServicesTestFile(): void {
   const services = Object.values(generatedServices).sort((a, b) => a.className.localeCompare(b.className))
 
-  const testOutput = fs.createWriteStream(path.resolve(__dirname, './ServiceDefinitions.spec.ts'), { encoding: 'utf8' })
+  const testOutput = fs.createWriteStream(path.resolve(import.meta.dirname, './ServiceDefinitions.spec.ts'), { encoding: 'utf8' })
   testOutput.write('// THIS FILE IS AUTO-GENERATED - DO NOT MODIFY\n')
   testOutput.write('import { describe, expect, it } from "vitest";\n')
   testOutput.write('import "./";\n\n')

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HAPStatus } from '../HAPServer'
-import { HapStatusError } from './hapStatusError'
+import { HAPStatus } from '../HAPServer.js'
+import { HapStatusError } from './hapStatusError.js'
 
 describe('hapStatusError', () => {
   beforeEach(() => {

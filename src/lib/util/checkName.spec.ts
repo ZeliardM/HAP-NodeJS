@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { checkName } from './checkName'
+import { checkName } from './checkName.js'
 
 describe('#checkName()', () => {
   let consoleWarnSpy: MockInstance

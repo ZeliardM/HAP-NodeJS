@@ -4,13 +4,13 @@ import crypto from 'node:crypto'
 import { EventEmitter } from 'node:events'
 
 import ciao, { CiaoService, MDNSServerOptions, Responder, ServiceEvent, ServiceTxt, ServiceType } from '@homebridge/ciao'
-import { InterfaceName, IPAddress } from '@homebridge/ciao/lib/NetworkManager'
+import { InterfaceName, IPAddress } from '@homebridge/ciao/lib/NetworkManager.js'
 import bonjour, { Advertisement, Bonjour } from 'bonjour-hap'
 import dbus, { DBusInterface, MessageBus, variantValue } from 'dbus-native'
 import createDebug from 'debug'
 
-import { AccessoryInfo } from './model/AccessoryInfo'
-import { PromiseTimeout } from './util/promise-utils'
+import { AccessoryInfo } from './model/AccessoryInfo.js'
+import { PromiseTimeout } from './util/promise-utils.js'
 
 const debug = createDebug('HAP-NodeJS:Advertiser')
 

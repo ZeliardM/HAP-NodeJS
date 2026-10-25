@@ -1,3 +1,3 @@
-export * from './DataStreamManagement'
-export * from './DataStreamParser'
-export * from './DataStreamServer'
+export * from './DataStreamManagement.js'
+export * from './DataStreamParser.js'
+export * from './DataStreamServer.js'

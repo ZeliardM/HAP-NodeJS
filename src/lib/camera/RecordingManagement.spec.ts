@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { Characteristic } from '../Characteristic'
-import { MockDelegate, mockRecordingOptions } from '../controller/CameraController.spec'
+import { Characteristic } from '../Characteristic.js'
+import { MockDelegate, mockRecordingOptions } from '../controller/CameraController.spec.js'
 import {
   AudioRecordingCodecType,
   AudioRecordingSamplerate,
@@ -9,8 +9,8 @@ import {
   EventTriggerOption,
   MediaContainerType,
   RecordingManagement,
-} from './RecordingManagement'
-import { AudioBitrate, H264Level, H264Profile, VideoCodecType } from './RTPStreamManagement'
+} from './RecordingManagement.js'
+import { AudioBitrate, H264Level, H264Profile, VideoCodecType } from './RTPStreamManagement.js'
 
 describe('recordingManagement', () => {
   it('handleSelectedCameraRecordingConfiguration', () => {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { EventTriggerOption } from '../camera'
-import { createCameraControllerOptions } from './CameraController.spec'
-import { DoorbellController } from './DoorbellController'
+import { EventTriggerOption } from '../camera/index.js'
+import { createCameraControllerOptions } from './CameraController.spec.js'
+import { DoorbellController } from './DoorbellController.js'
 
 describe('doorbellController', () => {
   it('event trigger options', () => {

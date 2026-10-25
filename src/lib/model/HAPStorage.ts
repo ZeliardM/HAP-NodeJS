@@ -1,7 +1,7 @@
 /* global NodeJS */
 import { accessSync, constants } from 'node:fs'
 
-import { HAPFileStorage } from './HAPFileStorage'
+import { HAPFileStorage } from './HAPFileStorage.js'
 
 /**
  * @group Model

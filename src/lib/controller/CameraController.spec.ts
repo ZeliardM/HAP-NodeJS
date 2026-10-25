@@ -4,15 +4,6 @@ import crypto from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  CameraController,
-  CameraControllerOptions,
-  CameraRecordingDelegate,
-  CameraStreamingDelegate,
-  DoorbellController,
-  ResourceRequestReason,
-  SnapshotRequestCallback,
-} from '.'
-import {
   AudioBitrate,
   AudioRecordingCodecType,
   AudioRecordingSamplerate,
@@ -28,11 +19,20 @@ import {
   SnapshotRequest,
   SRTPCryptoSuites,
   VideoCodecType,
-} from '../camera'
-import { Characteristic } from '../Characteristic'
-import { HAPStatus } from '../HAPServer'
+} from '../camera/index.js'
+import { Characteristic } from '../Characteristic.js'
+import { HAPStatus } from '../HAPServer.js'
+import {
+  CameraController,
+  CameraControllerOptions,
+  CameraRecordingDelegate,
+  CameraStreamingDelegate,
+  DoorbellController,
+  ResourceRequestReason,
+  SnapshotRequestCallback,
+} from './index.js'
 
-import '../definitions'
+import '../definitions/index.js'
 
 export const MOCK_IMAGE = crypto.randomBytes(64)
 

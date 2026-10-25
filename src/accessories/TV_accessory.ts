@@ -10,7 +10,7 @@ import {
   CharacteristicValue,
   Service,
   uuid,
-} from '..'
+} from '../index.js'
 
 // Generate a consistent UUID for TV that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic

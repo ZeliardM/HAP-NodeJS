@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { Accessory } from '../Accessory'
-import { Bridge } from '../Bridge'
-import { ControllerIdentifier, ControllerServiceMap, SerializableController, StateChangeDelegate } from '../controller'
-import * as uuid from '../util/uuid'
-import { ControllerStorage } from './ControllerStorage'
-import { HAPStorage } from './HAPStorage'
+import { Accessory } from '../Accessory.js'
+import { Bridge } from '../Bridge.js'
+import { ControllerIdentifier, ControllerServiceMap, SerializableController, StateChangeDelegate } from '../controller/index.js'
+import * as uuid from '../util/uuid.js'
+import { ControllerStorage } from './ControllerStorage.js'
+import { HAPStorage } from './HAPStorage.js'
 
 interface State {
   first?: string

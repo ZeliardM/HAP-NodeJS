@@ -6,15 +6,15 @@ import http, { IncomingMessage, ServerResponse } from 'node:http'
 import net, { AddressInfo, Socket } from 'node:net'
 import os from 'node:os'
 
-import { getNetAddress } from '@homebridge/ciao/lib/util/domain-formatter'
+import { getNetAddress } from '@homebridge/ciao/lib/util/domain-formatter.js'
 import createDebug from 'debug'
 import { SrpServer } from 'fast-srp-hap'
 
-import { CharacteristicEventNotification, EventNotification } from '../../internal-types'
-import { CharacteristicValue, Nullable, SessionIdentifier } from '../../types'
-import * as hapCrypto from './hapCrypto'
-import { getOSLoopbackAddressIfAvailable } from './net-utils'
-import * as uuid from './uuid'
+import { CharacteristicEventNotification, EventNotification } from '../../internal-types.js'
+import { CharacteristicValue, Nullable, SessionIdentifier } from '../../types.js'
+import * as hapCrypto from './hapCrypto.js'
+import { getOSLoopbackAddressIfAvailable } from './net-utils.js'
+import * as uuid from './uuid.js'
 
 const debug = createDebug('HAP-NodeJS:EventedHTTPServer')
 const debugCon = createDebug('HAP-NodeJS:EventedHTTPServer:Connection')

@@ -8,7 +8,7 @@ import {
   CharacteristicValue,
   Service,
   uuid,
-} from '..'
+} from '../index.js'
 
 const speakerUUID = uuid.generate('hap-nodejs:accessories:smart-speaker')
 const speaker = exports.accessory = new Accessory('SmartSpeaker', speakerUUID)

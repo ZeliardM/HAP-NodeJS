@@ -9,7 +9,7 @@ import {
   NodeCallback,
   Service,
   uuid, VoidCallback,
-} from '..'
+} from '../index.js'
 
 const MOTION_SENSOR = {
   motionDetected: false,

@@ -15,8 +15,8 @@ import {
   CharacteristicValue,
   Service,
   uuid,
-} from '..'
-import { VoidCallback } from '../types'
+} from '../index.js'
+import { VoidCallback } from '../types.js'
 
 const ACTest_data: Record<string, CharacteristicValue> = {
   fanPowerOn: false,

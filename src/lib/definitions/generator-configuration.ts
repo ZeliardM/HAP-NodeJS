@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 
-import { Access } from '../Characteristic'
-import { GeneratedCharacteristic, GeneratedService } from './generate-definitions'
+import { Access } from '../Characteristic.js'
+import { GeneratedCharacteristic, GeneratedService } from './generate-definitions.js'
 
 // eslint-disable-next-line no-restricted-syntax
 const enum PropertyId {

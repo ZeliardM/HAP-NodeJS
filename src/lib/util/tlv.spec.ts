@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 
 import { describe, expect, it } from 'vitest'
 
-import { decode, decodeList, decodeWithLists, encode, readVariableUIntLE, writeVariableUIntLE } from './tlv'
+import { decode, decodeList, decodeWithLists, encode, readVariableUIntLE, writeVariableUIntLE } from './tlv.js'
 
 const HELLO_WORLD_BUFFER = Buffer.from('Hello World!')
 

@@ -8,7 +8,7 @@ import {
   Service,
   uuid,
   VoidCallback,
-} from '..'
+} from '../index.js'
 
 const FAKE_FAN: Record<string, any> = {
   powerOn: false,

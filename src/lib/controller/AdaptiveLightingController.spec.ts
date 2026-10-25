@@ -2,11 +2,11 @@ import { Buffer } from 'node:buffer'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Characteristic } from '../Characteristic'
-import { HAPStatus } from '../HAPServer'
-import { Service } from '../Service'
-import * as tlv from '../util/tlv'
-import { AdaptiveLightingController, AdaptiveLightingControllerMode } from './AdaptiveLightingController'
+import { Characteristic } from '../Characteristic.js'
+import { HAPStatus } from '../HAPServer.js'
+import { Service } from '../Service.js'
+import * as tlv from '../util/tlv.js'
+import { AdaptiveLightingController, AdaptiveLightingControllerMode } from './AdaptiveLightingController.js'
 
 const EPOCH_MILLIS_2001_01_01 = Date.UTC(2001, 0, 1)
 const HOUR = 3600000

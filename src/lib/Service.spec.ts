@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { Characteristic } from './Characteristic'
-import { SerializedService, Service } from './Service'
-import * as uuid from './util/uuid'
+import { Characteristic } from './Characteristic.js'
+import { SerializedService, Service } from './Service.js'
+import * as uuid from './util/uuid.js'
 
 function createService() {
   return new Service('Test', uuid.generate('Foo'), 'subtype')

@@ -4,12 +4,12 @@ import { SRP, SrpClient } from 'fast-srp-hap'
 import tweetnacl from 'tweetnacl'
 import { expect } from 'vitest'
 
-import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types'
-import { HAPPairingHTTPCode } from '../lib/HAPServer'
-import * as hapCrypto from '../lib/util/hapCrypto'
-import { EncryptedData } from '../lib/util/hapCrypto'
-import * as tlv from '../lib/util/tlv'
-import { HAPHTTPClient, HTTPResponse } from './HAPHTTPClient'
+import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types.js'
+import { HAPPairingHTTPCode } from '../lib/HAPServer.js'
+import * as hapCrypto from '../lib/util/hapCrypto.js'
+import { EncryptedData } from '../lib/util/hapCrypto.js'
+import * as tlv from '../lib/util/tlv.js'
+import { HAPHTTPClient, HTTPResponse } from './HAPHTTPClient.js'
 
 export interface PairSetupM2 {
   serverPublicKey: Buffer

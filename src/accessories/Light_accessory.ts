@@ -10,7 +10,7 @@ import {
   Service,
   uuid,
   VoidCallback,
-} from '..'
+} from '../index.js'
 
 class LightControllerClass {
   name = 'Simple Light' // name of accessory

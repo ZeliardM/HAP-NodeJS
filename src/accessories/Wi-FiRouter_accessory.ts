@@ -1,4 +1,4 @@
-import { Accessory, AccessoryEventTypes, Categories, Service, uuid, VoidCallback } from '..'
+import { Accessory, AccessoryEventTypes, Categories, Service, uuid, VoidCallback } from '../index.js'
 
 const UUID = uuid.generate('hap-nodejs:accessories:wifi-router')
 export const accessory = new Accessory('Wi-Fi Router', UUID)

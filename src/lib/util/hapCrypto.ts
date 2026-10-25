@@ -6,7 +6,7 @@ import process from 'node:process'
 
 import hkdf from 'futoin-hkdf'
 
-import { HAPEncryption } from './eventedhttp'
+import { HAPEncryption } from './eventedhttp.js'
 
 if (!crypto.getCiphers().includes('chacha20-poly1305')) {
   assert.fail(`The cipher 'chacha20-poly1305' is not supported with your current running nodejs version v${process.version}. `

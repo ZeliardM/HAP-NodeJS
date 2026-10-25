@@ -6,16 +6,16 @@ import util from 'node:util'
 
 import createDebug from 'debug'
 
-import { AccessoryJsonObject, CharacteristicJsonObject, MacAddress, ServiceJsonObject } from '../../types'
-import { Categories } from '../Accessory'
-import { EventedHTTPServer, HAPConnection, HAPUsername } from '../util/eventedhttp'
-import { generateEd25519KeyPair } from '../util/hapCrypto'
-import { HAPStorage } from './HAPStorage'
+import { AccessoryJsonObject, CharacteristicJsonObject, MacAddress, ServiceJsonObject } from '../../types.js'
+import { Categories } from '../Accessory.js'
+import { EventedHTTPServer, HAPConnection, HAPUsername } from '../util/eventedhttp.js'
+import { generateEd25519KeyPair } from '../util/hapCrypto.js'
+import { HAPStorage } from './HAPStorage.js'
 
 const debug = createDebug('HAP-NodeJS:AccessoryInfo')
 
 function getVersion(): string {
-  const packageJson = JSON.parse(readFileSync(require.resolve('../../../package.json'), 'utf-8'))
+  const packageJson = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf-8'))
   const { version } = packageJson
   return version
 }

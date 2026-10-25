@@ -1,7 +1,7 @@
 import type { Socket } from 'node:net'
 
-import type { HAPConnection } from '../util/eventedhttp'
-import type { DataStreamConnection, PreparedDataStreamSession } from './DataStreamServer'
+import type { HAPConnection } from '../util/eventedhttp.js'
+import type { DataStreamConnection, PreparedDataStreamSession } from './DataStreamServer.js'
 
 import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
@@ -9,9 +9,9 @@ import { EventEmitter } from 'node:events'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as hapCrypto from '../util/hapCrypto'
-import { DataStreamParser, DataStreamReader, DataStreamWriter } from './DataStreamParser'
-import { DataStreamServer, HDSStatus } from './DataStreamServer'
+import * as hapCrypto from '../util/hapCrypto.js'
+import { DataStreamParser, DataStreamReader, DataStreamWriter } from './DataStreamParser.js'
+import { DataStreamServer, HDSStatus } from './DataStreamServer.js'
 
 class FakeSocket extends EventEmitter {
   remoteAddress = '192.0.2.1'

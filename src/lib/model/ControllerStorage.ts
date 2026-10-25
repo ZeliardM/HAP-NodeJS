@@ -3,10 +3,10 @@ import util from 'node:util'
 
 import createDebug from 'debug'
 
-import { MacAddress } from '../../types'
-import { Accessory } from '../Accessory'
-import { ControllerIdentifier, SerializableController } from '../controller'
-import { HAPStorage } from './HAPStorage'
+import { MacAddress } from '../../types.js'
+import { Accessory } from '../Accessory.js'
+import { ControllerIdentifier, SerializableController } from '../controller/index.js'
+import { HAPStorage } from './HAPStorage.js'
 
 const debug = createDebug('HAP-NodeJS:ControllerStorage')
 const hksvDebug = createDebug('HAP-NodeJS:HKSV')

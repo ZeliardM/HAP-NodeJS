@@ -5,7 +5,7 @@ import type {
   Siri,
   TargetControl,
   TargetControlManagement,
-} from '../definitions'
+} from '../definitions/index.js'
 
 import assert from 'node:assert'
 import { Buffer } from 'node:buffer'
@@ -13,14 +13,14 @@ import { EventEmitter } from 'node:events'
 
 import createDebug from 'debug'
 
-import { CharacteristicValue } from '../../types'
-import { AudioBitrate, AudioSamplerate } from '../camera'
+import { CharacteristicValue } from '../../types.js'
+import { AudioBitrate, AudioSamplerate } from '../camera/index.js'
 import {
   Characteristic,
   CharacteristicEventTypes,
   CharacteristicGetCallback,
   CharacteristicSetCallback,
-} from '../Characteristic'
+} from '../Characteristic.js'
 import {
   DataStreamConnection,
   DataStreamConnectionEvent,
@@ -35,18 +35,18 @@ import {
   Protocols,
   RequestHandler,
   Topics,
-} from '../datastream'
-import { HAPStatus } from '../HAPServer'
-import { Service } from '../Service'
-import { HAPConnection, HAPConnectionEvent } from '../util/eventedhttp'
-import * as tlv from '../util/tlv'
+} from '../datastream/index.js'
+import { HAPStatus } from '../HAPServer.js'
+import { Service } from '../Service.js'
+import { HAPConnection, HAPConnectionEvent } from '../util/eventedhttp.js'
+import * as tlv from '../util/tlv.js'
 import {
   ControllerIdentifier,
   ControllerServiceMap,
   DefaultControllerType,
   SerializableController,
   StateChangeDelegate,
-} from './Controller'
+} from './Controller.js'
 
 const debug = createDebug('HAP-NodeJS:Remote:Controller')
 

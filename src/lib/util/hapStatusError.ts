@@ -1,4 +1,4 @@
-import { HAPStatus, IsKnownHAPStatusError } from '../HAPServer'
+import { HAPStatus, IsKnownHAPStatusError } from '../HAPServer.js'
 
 /**
  * Throws a HAP status error that is sent back to HomeKit.

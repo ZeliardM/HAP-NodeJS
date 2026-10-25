@@ -2,7 +2,7 @@ import os from 'node:os'
 
 import { describe, expect, it, vi } from 'vitest'
 
-import { findLoopbackAddress } from './net-utils'
+import { findLoopbackAddress } from './net-utils.js'
 
 const mock = vi.spyOn(os, 'networkInterfaces')
 

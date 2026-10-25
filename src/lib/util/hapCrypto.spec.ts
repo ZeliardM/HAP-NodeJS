@@ -4,8 +4,8 @@ import crypto from 'node:crypto'
 import tweetnacl from 'tweetnacl'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { HAPEncryption } from './eventedhttp'
-import * as hapCrypto from './hapCrypto'
+import { HAPEncryption } from './eventedhttp.js'
+import * as hapCrypto from './hapCrypto.js'
 
 function fromHex(hex: string): Buffer {
   return Buffer.from(hex.trim().replace(/ /g, ''), 'hex')

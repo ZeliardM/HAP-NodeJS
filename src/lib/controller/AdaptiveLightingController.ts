@@ -5,14 +5,14 @@ import { EventEmitter } from 'node:events'
 
 import createDebug from 'debug'
 
-import { CharacteristicValue } from '../../types'
+import { CharacteristicValue } from '../../types.js'
 import {
   ChangeReason,
   Characteristic,
   CharacteristicChange,
   CharacteristicEventTypes,
   CharacteristicOperationContext,
-} from '../Characteristic'
+} from '../Characteristic.js'
 import {
   Brightness,
   CharacteristicValueActiveTransitionCount,
@@ -22,20 +22,20 @@ import {
   Lightbulb,
   Saturation,
   SupportedCharacteristicValueTransitionConfiguration,
-} from '../definitions'
-import { HAPStatus } from '../HAPServer'
-import { ColorUtils } from '../util/color-utils'
-import { HapStatusError } from '../util/hapStatusError'
-import { epochMillisFromMillisSince2001_01_01Buffer } from '../util/time'
-import * as tlv from '../util/tlv'
-import * as uuid from '../util/uuid'
+} from '../definitions/index.js'
+import { HAPStatus } from '../HAPServer.js'
+import { ColorUtils } from '../util/color-utils.js'
+import { HapStatusError } from '../util/hapStatusError.js'
+import { epochMillisFromMillisSince2001_01_01Buffer } from '../util/time.js'
+import * as tlv from '../util/tlv.js'
+import * as uuid from '../util/uuid.js'
 import {
   ControllerIdentifier,
   ControllerServiceMap,
   DefaultControllerType,
   SerializableController,
   StateChangeDelegate,
-} from './Controller'
+} from './Controller.js'
 
 const debug = createDebug('HAP-NodeJS:Controller:TransitionControl')
 

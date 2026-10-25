@@ -252,7 +252,7 @@ import type {
   WiFiCapabilities,
   WiFiConfigurationControl,
   WiFiSatelliteStatus,
-} from './definitions'
+} from './definitions/index.js'
 
 import assert from 'node:assert'
 import { EventEmitter } from 'node:events'
@@ -260,14 +260,14 @@ import { inspect } from 'node:util'
 
 import createDebug from 'debug'
 
-import { CharacteristicJsonObject, CharacteristicValue, Nullable, PartialAllowingNull, VoidCallback } from '../types'
-import { CharacteristicWarningType } from './Accessory'
-import { HAPStatus } from './HAPServer'
-import { IdentifierCache } from './model/IdentifierCache'
-import { clone } from './util/clone'
-import { HAPConnection } from './util/eventedhttp'
-import { HapStatusError } from './util/hapStatusError'
-import { once } from './util/once'
+import { CharacteristicJsonObject, CharacteristicValue, Nullable, PartialAllowingNull, VoidCallback } from '../types.js'
+import { CharacteristicWarningType } from './Accessory.js'
+import { HAPStatus } from './HAPServer.js'
+import { IdentifierCache } from './model/IdentifierCache.js'
+import { clone } from './util/clone.js'
+import { HAPConnection } from './util/eventedhttp.js'
+import { HapStatusError } from './util/hapStatusError.js'
+import { once } from './util/once.js'
 import {
   extractHAPStatusFromError,
   formatOutgoingCharacteristicValue,
@@ -276,8 +276,8 @@ import {
   isUnsignedNumericFormat,
   numericLowerBound,
   numericUpperBound,
-} from './util/request-util'
-import { BASE_UUID, toShortForm } from './util/uuid'
+} from './util/request-util.js'
+import { BASE_UUID, toShortForm } from './util/uuid.js'
 
 const debug = createDebug('HAP-NodeJS:Characteristic')
 

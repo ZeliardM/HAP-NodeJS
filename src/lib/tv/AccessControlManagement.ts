@@ -1,11 +1,11 @@
-import type { AccessControl } from '../definitions'
+import type { AccessControl } from '../definitions/index.js'
 
 import { Buffer } from 'node:buffer'
 import { EventEmitter } from 'node:events'
 
-import { Characteristic } from '../Characteristic'
-import { Service } from '../Service'
-import * as tlv from '../util/tlv'
+import { Characteristic } from '../Characteristic.js'
+import { Service } from '../Service.js'
+import * as tlv from '../util/tlv.js'
 
 // eslint-disable-next-line no-restricted-syntax
 const enum AccessControlTypes {

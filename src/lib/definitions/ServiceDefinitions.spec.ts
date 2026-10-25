@@ -1,10 +1,10 @@
 // THIS FILE IS AUTO-GENERATED - DO NOT MODIFY
 import { describe, expect, it } from 'vitest'
 
-import { Characteristic } from '../Characteristic'
-import { Service } from '../Service'
+import { Characteristic } from '../Characteristic.js'
+import { Service } from '../Service.js'
 
-import './'
+import './index.js'
 
 describe('serviceDefinitions', () => {
   describe('accessCode', () => {

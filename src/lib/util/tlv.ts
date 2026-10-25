@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { Buffer } from 'node:buffer'
 
-import * as hapCrypto from '../util/hapCrypto'
+import * as hapCrypto from '../util/hapCrypto.js'
 
 /**
  * Type Length Value encoding/decoding, used by HAP as a wire format.

@@ -7,7 +7,7 @@ import { URL } from 'node:url'
 import createDebug from 'debug'
 import { SRP, SrpServer } from 'fast-srp-hap'
 
-import { consideredTrue, HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types'
+import { consideredTrue, HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types.js'
 import {
   AccessoriesResponse,
   CharacteristicId,
@@ -20,12 +20,12 @@ import {
   PrepareWriteRequest,
   ResourceRequest,
   VoidCallback,
-} from '../types'
-import { AccessoryInfo, PairingInformation, PermissionTypes } from './model/AccessoryInfo'
-import { EventedHTTPServer, EventedHTTPServerEvent, HAPConnection, HAPEncryption, HAPUsername } from './util/eventedhttp'
-import * as hapCrypto from './util/hapCrypto'
-import { once } from './util/once'
-import * as tlv from './util/tlv'
+} from '../types.js'
+import { AccessoryInfo, PairingInformation, PermissionTypes } from './model/AccessoryInfo.js'
+import { EventedHTTPServer, EventedHTTPServerEvent, HAPConnection, HAPEncryption, HAPUsername } from './util/eventedhttp.js'
+import * as hapCrypto from './util/hapCrypto.js'
+import { once } from './util/once.js'
+import * as tlv from './util/tlv.js'
 
 const debug = createDebug('HAP-NodeJS:HAPServer')
 

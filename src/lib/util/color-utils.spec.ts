@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { ColorUtils } from './color-utils'
+import { ColorUtils } from './color-utils.js'
 
 describe('colorUtils', () => {
   describe('#colorTemperatureToHueAndSaturation()', () => {

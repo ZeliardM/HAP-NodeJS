@@ -1,8 +1,8 @@
 // THIS FILE IS AUTO-GENERATED - DO NOT MODIFY
 // V=889
 
-import { Characteristic } from '../Characteristic'
-import { Service } from '../Service'
+import { Characteristic } from '../Characteristic.js'
+import { Service } from '../Service.js'
 
 /**
  * Service "Access Code"

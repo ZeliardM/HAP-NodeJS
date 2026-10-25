@@ -5,10 +5,10 @@ import createDebug from 'debug'
 import tweetnacl from 'tweetnacl'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types'
-import { HAPHTTPClient } from '../test-utils/HAPHTTPClient'
-import { PairSetupClient } from '../test-utils/PairSetupClient'
-import { PairVerifyClient } from '../test-utils/PairVerifyClient'
+import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from '../internal-types.js'
+import { HAPHTTPClient } from '../test-utils/HAPHTTPClient.js'
+import { PairSetupClient } from '../test-utils/PairSetupClient.js'
+import { PairVerifyClient } from '../test-utils/PairVerifyClient.js'
 import {
   AccessoriesResponse,
   CharacteristicId,
@@ -17,9 +17,9 @@ import {
   CharacteristicsWriteResponse,
   ResourceRequest,
   ResourceRequestType,
-} from '../types'
-import { Accessory } from './Accessory'
-import { Characteristic, Formats, Perms } from './Characteristic'
+} from '../types.js'
+import { Accessory } from './Accessory.js'
+import { Characteristic, Formats, Perms } from './Characteristic.js'
 import {
   HAPHTTPCode,
   HAPPairingHTTPCode,
@@ -29,13 +29,13 @@ import {
   IdentifyCallback,
   IsKnownHAPStatusError,
   TLVErrorCode,
-} from './HAPServer'
-import { AccessoryInfo, PairingInformation, PermissionTypes } from './model/AccessoryInfo'
-import { Service } from './Service'
-import { HAPConnection, HAPEncryption } from './util/eventedhttp'
-import * as hapCrypto from './util/hapCrypto'
-import { awaitEventOnce, PromiseTimeout } from './util/promise-utils'
-import * as tlv from './util/tlv'
+} from './HAPServer.js'
+import { AccessoryInfo, PairingInformation, PermissionTypes } from './model/AccessoryInfo.js'
+import { Service } from './Service.js'
+import { HAPConnection, HAPEncryption } from './util/eventedhttp.js'
+import * as hapCrypto from './util/hapCrypto.js'
+import { awaitEventOnce, PromiseTimeout } from './util/promise-utils.js'
+import * as tlv from './util/tlv.js'
 
 describe('hAPServer', () => {
   const serverUsername = 'AA:AA:AA:AA:AA:AA'

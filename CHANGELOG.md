@@ -8,6 +8,7 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 
 - **For developers** importing single files from `dist/lib` instead of the package itself: `dist/lib/Service.js` and `dist/lib/Characteristic.js` no longer attach the definitions (like `Service.Lightbulb` or `Characteristic.On`) when they are loaded on their own. Import from `@homebridge/hap-nodejs` as normal and nothing changes.
 - **Node.js 22 users** need `v22.12.0` or newer. Node.js 24 and 26 are unchanged. This is the first Node.js 22 release that can `require()` an ES module, and the upstream `dbus-native` package needs it too.
+- **HAP-NodeJS is now an ES module.** Importing it works as before, including `import hap from '@homebridge/hap-nodejs'`. CommonJS code can still `require('@homebridge/hap-nodejs')`, on the Node.js versions above.
 
 ### Changes
 
@@ -65,6 +66,7 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 - test: migrate from jest to vitest
 - chore(lint): switch to the @antfu/eslint-config rules used by homebridge
 - chore: raise the minimum Node.js 22 version to 22.12.0
+- feat: migrate the package to an ES module
 
 ### Homebridge Dependencies
 

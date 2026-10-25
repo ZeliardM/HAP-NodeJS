@@ -16,22 +16,22 @@ import {
   MediaContainerType,
   RecordingPacket,
   VideoCodecType,
-} from '../camera'
+} from '../camera/index.js'
 import {
   CameraController,
   CameraControllerOptions,
   CameraRecordingDelegate,
   CameraStreamingDelegate,
   PrepareStreamCallback,
-} from '../controller'
-import { HAPStatus } from '../HAPServer'
-import { HAPConnection } from '../util/eventedhttp'
-import * as tlv from '../util/tlv'
-import * as uuid from '../util/uuid'
-import RTPProxy from './RTPProxy'
-import { CameraStreamingOptions, RTPStreamManagement, SRTPCryptoSuites } from './RTPStreamManagement'
+} from '../controller/index.js'
+import { HAPStatus } from '../HAPServer.js'
+import { HAPConnection } from '../util/eventedhttp.js'
+import * as tlv from '../util/tlv.js'
+import * as uuid from '../util/uuid.js'
+import RTPProxy from './RTPProxy.js'
+import { CameraStreamingOptions, RTPStreamManagement, SRTPCryptoSuites } from './RTPStreamManagement.js'
 
-import '../definitions'
+import '../definitions/index.js'
 
 class MockDelegate implements CameraStreamingDelegate, CameraRecordingDelegate {
   handleSnapshotRequest(): void {

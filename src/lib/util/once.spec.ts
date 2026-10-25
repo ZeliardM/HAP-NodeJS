@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { once } from './once'
+import { once } from './once.js'
 
 describe('#once()', () => {
   it('should call a function once', () => {

@@ -3,8 +3,8 @@ import { Buffer } from 'node:buffer'
 
 import createDebug from 'debug'
 
-import * as hapCrypto from '../util/hapCrypto'
-import * as uuid from '../util/uuid'
+import * as hapCrypto from '../util/hapCrypto.js'
+import * as uuid from '../util/uuid.js'
 
 // welcome to hell :)
 // in this file lies madness and frustration. and It's not only about HDS. Also, JavaScript is hell

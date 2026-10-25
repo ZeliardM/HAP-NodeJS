@@ -14,7 +14,7 @@ import {
   FrameHandler,
   HDSProtocolSpecificErrorReason,
   SiriAudioStreamProducer,
-} from '..'
+} from '../index.js'
 
 const debug = createDebug('HAP-NodeJS:Remote:GStreamer')
 

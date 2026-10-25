@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { HAPStorage } from './HAPStorage'
-import { IdentifierCache } from './IdentifierCache'
+import { HAPStorage } from './HAPStorage.js'
+import { IdentifierCache } from './IdentifierCache.js'
 
 function createIdentifierCache(username = 'username') {
   return new IdentifierCache(username)

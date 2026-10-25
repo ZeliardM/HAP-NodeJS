@@ -3,10 +3,10 @@ import { EventEmitter } from 'node:events'
 
 import { describe, expect, it, vi } from 'vitest'
 
-import { Characteristic } from '../Characteristic'
-import { HAPConnectionEvent } from '../util/eventedhttp'
-import * as tlv from '../util/tlv'
-import { ButtonType, RemoteController, RemoteControllerEvents, SiriAudioSession, TargetUpdates } from './RemoteController'
+import { Characteristic } from '../Characteristic.js'
+import { HAPConnectionEvent } from '../util/eventedhttp.js'
+import * as tlv from '../util/tlv.js'
+import { ButtonType, RemoteController, RemoteControllerEvents, SiriAudioSession, TargetUpdates } from './RemoteController.js'
 
 const Operation = {
   LIST: 0x01,

@@ -5,8 +5,8 @@ import { EventEmitter } from 'node:events'
 import dbus, { DBusError, MessageBus } from 'dbus-native'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AvahiAdvertiser, CiaoAdvertiser, DBusInvokeError, PairingFeatureFlag, ResolvedAdvertiser, StatusFlag } from './Advertiser'
-import { AccessoryInfo } from './model/AccessoryInfo'
+import { AvahiAdvertiser, CiaoAdvertiser, DBusInvokeError, PairingFeatureFlag, ResolvedAdvertiser, StatusFlag } from './Advertiser.js'
+import { AccessoryInfo } from './model/AccessoryInfo.js'
 
 type InvokeHandler = (msg: any) => unknown
 

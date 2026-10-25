@@ -7,9 +7,9 @@ import net, { Socket } from 'node:net'
 
 import createDebug from 'debug'
 
-import { HAPConnection, HAPConnectionEvent } from '../util/eventedhttp'
-import * as hapCrypto from '../util/hapCrypto'
-import { DataStreamParser, DataStreamReader, DataStreamWriter, Int64 } from './DataStreamParser'
+import { HAPConnection, HAPConnectionEvent } from '../util/eventedhttp.js'
+import * as hapCrypto from '../util/hapCrypto.js'
+import { DataStreamParser, DataStreamReader, DataStreamWriter, Int64 } from './DataStreamParser.js'
 
 const debug = createDebug('HAP-NodeJS:DataStream:Server')
 

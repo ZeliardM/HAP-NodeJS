@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 
 import { describe, expect, it } from 'vitest'
 
-import { DataStreamParser, DataStreamReader, DataStreamWriter, Float64 } from './DataStreamParser'
+import { DataStreamParser, DataStreamReader, DataStreamWriter, Float64 } from './DataStreamParser.js'
 
 describe('dataStreamParser', () => {
   describe('writeNumber Int32 range check', () => {
