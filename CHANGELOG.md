@@ -4,6 +4,10 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 
 ## v2.2.4 (Pending Release)
 
+### ⚠️ Upgrade notes
+
+- **For developers** importing single files from `dist/lib` instead of the package itself: `dist/lib/Service.js` and `dist/lib/Characteristic.js` no longer attach the definitions (like `Service.Lightbulb` or `Characteristic.On`) when they are loaded on their own. Import from `@homebridge/hap-nodejs` as normal and nothing changes.
+
 ### Changes
 
 - fix: ignore state changes reported while a controller is being restored (#1133) (@seydx)
@@ -56,6 +60,7 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 - fix(server): skip an event notification whose events were all unregistered
 - fix(server): log the listener count from before the removal in HAPConnection.off()
 - fix(accessory): compare a pairing's public key byte for byte instead of as text
+- refactor: load the service and characteristic definitions without an import cycle
 
 ### Homebridge Dependencies
 
