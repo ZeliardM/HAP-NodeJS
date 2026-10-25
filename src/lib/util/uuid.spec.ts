@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { toShortForm, toLongForm, unparse, write } from "./uuid";
 
 const uuidString = "cf47a128-769a-4563-8203-11f307b1926d";

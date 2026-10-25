@@ -1,26 +1,33 @@
-import crypto from "crypto";
-import { EventEmitter } from "events";
-import { Socket } from "net";
-import { HAPConnection } from "../util/eventedhttp";
+import type { Socket } from "node:net";
+
+import type { HAPConnection } from "../util/eventedhttp";
+import type { DataStreamConnection, PreparedDataStreamSession } from "./DataStreamServer";
+
+import { Buffer } from "node:buffer";
+import crypto from "node:crypto";
+import { EventEmitter } from "node:events";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import * as hapCrypto from "../util/hapCrypto";
 import { DataStreamParser, DataStreamReader, DataStreamWriter } from "./DataStreamParser";
-import { DataStreamConnection, DataStreamServer, HDSStatus, PreparedDataStreamSession } from "./DataStreamServer";
+import { DataStreamServer, HDSStatus } from "./DataStreamServer";
 
 class FakeSocket extends EventEmitter {
   remoteAddress = "192.0.2.1";
-  setNoDelay = jest.fn();
-  setKeepAlive = jest.fn();
-  write = jest.fn();
-  end = jest.fn();
-  destroy = jest.fn();
+  setNoDelay = vi.fn();
+  setKeepAlive = vi.fn();
+  write = vi.fn();
+  end = vi.fn();
+  destroy = vi.fn();
 }
 
 interface TestSession {
-  server: DataStreamServer;
-  socket: FakeSocket;
-  connection: DataStreamConnection;
-  prepared: PreparedDataStreamSession;
-  nonce: number;
+  server: DataStreamServer
+  socket: FakeSocket
+  connection: DataStreamConnection
+  prepared: PreparedDataStreamSession
+  nonce: number
 }
 
 function setupSession(): TestSession {
@@ -77,13 +84,13 @@ function messagePayload(header: Record<string, any>, message: Record<string, any
   ]);
 }
 
-describe("DataStreamServer", () => {
+describe("dataStreamServer", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("connection identification", () => {
@@ -170,7 +177,7 @@ describe("DataStreamServer", () => {
       expect(socket.end).toHaveBeenCalledTimes(1);
       expect(socket.destroy).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(5000);
       expect(socket.destroy).toHaveBeenCalledTimes(1);
     });
 
@@ -180,7 +187,7 @@ describe("DataStreamServer", () => {
       connection.close();
       socket.emit("close");
 
-      jest.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(5000);
       expect(socket.destroy).not.toHaveBeenCalled();
     });
   });
@@ -192,7 +199,7 @@ describe("DataStreamServer", () => {
       const header = Buffer.from([0x02, 0, 0, 0]); // payload type 2 is unknown
       header.writeUIntBE(payloadLength, 1, 3);
 
-      const allocSpy = jest.spyOn(Buffer, "alloc");
+      const allocSpy = vi.spyOn(Buffer, "alloc");
       try {
         expect(() => socket.emit("data", Buffer.concat([
           header,

@@ -1,57 +1,61 @@
+import { Buffer } from "node:buffer";
+
+import { describe, expect, it } from "vitest";
+
 import { decode, decodeList, decodeWithLists, encode, readVariableUIntLE, writeVariableUIntLE } from "./tlv";
 
 const HELLO_WORLD_BUFFER = Buffer.from("Hello World!");
 
 describe("tlv", () => {
   describe("encode", () => {
-    test("encode simple integer", () => {
+    it("encode simple integer", () => {
       const encoded = encode(1, 42);
       expect(encoded.toString("hex"))
         .toEqual("01012a");
     });
 
-    test("encode simple string", () => {
+    it("encode simple string", () => {
       const encoded = encode(2, "Hello World!");
       expect(encoded.toString("hex"))
-        .toEqual("020c" + HELLO_WORLD_BUFFER.toString("hex"));
+        .toEqual(`020c${HELLO_WORLD_BUFFER.toString("hex")}`);
     });
 
-    test("encode simple string as Buffer", () => {
+    it("encode simple string as Buffer", () => {
       const buffer = Buffer.from("Hello World!");
       const encoded = encode(3, buffer);
       expect(encoded.toString("hex"))
-        .toEqual("030c" + HELLO_WORLD_BUFFER.toString("hex"));
+        .toEqual(`030c${HELLO_WORLD_BUFFER.toString("hex")}`);
     });
 
-    test("encode tlv list", () => {
+    it("encode tlv list", () => {
       const encoded = encode(4, [1, 2, 3, 4, 5]);
       expect(encoded.toString("hex"))
         .toEqual(
-          "040101" +
-          "0000" +
-          "040102" +
-          "0000" +
-          "040103" +
-          "0000" +
-          "040104" +
-          "0000" +
-          "040105",
+          "040101"
+          + "0000"
+          + "040102"
+          + "0000"
+          + "040103"
+          + "0000"
+          + "040104"
+          + "0000"
+          + "040105",
         );
     });
 
-    test("encode single value tlv list", () => {
+    it("encode single value tlv list", () => {
       const encoded = encode(5, [1]);
       expect(encoded.toString("hex"))
         .toEqual("050101");
     });
 
-    test("encode empty tlv list", () => {
+    it("encode empty tlv list", () => {
       const encoded = encode(6, []);
       expect(encoded.toString("hex"))
         .toEqual("0600");
     });
 
-    test("ensure too long buffers are split!", () => {
+    it("ensure too long buffers are split!", () => {
       const fill = Buffer.from([1, 2, 3]);
 
       const buffer = Buffer.alloc(615, fill);
@@ -59,13 +63,13 @@ describe("tlv", () => {
 
       expect(encoded.toString("hex"))
         .toEqual(
-          "01ff" + Buffer.alloc(255, fill).toString("hex") +
-          "01ff" + Buffer.alloc(255, fill).toString("hex") +
-          "0169" + Buffer.alloc(105, fill).toString("hex"),
+          `01ff${Buffer.alloc(255, fill).toString("hex")
+          }01ff${Buffer.alloc(255, fill).toString("hex")
+          }0169${Buffer.alloc(105, fill).toString("hex")}`,
         );
     });
 
-    test("encode via varargs", () => {
+    it("encode via varargs", () => {
       const encoded = encode(0x01, 1, 0x02, 2, 0x03, 3);
       expect(encoded.toString("hex"))
         .toEqual("010101020102030103");
@@ -73,14 +77,14 @@ describe("tlv", () => {
   });
 
   describe("decode", () => {
-    test("decode single element", () => {
+    it("decode single element", () => {
       const decoded = decode(Buffer.from("010101", "hex"));
       expect(decoded).toEqual({
         1: Buffer.from("01", "hex"),
       });
     });
 
-    test("decode multiple elements", () => {
+    it("decode multiple elements", () => {
       const decoded = decode(Buffer.from("010101020102030103", "hex"));
       expect(decoded).toEqual({
         1: Buffer.from("01", "hex"),
@@ -89,38 +93,38 @@ describe("tlv", () => {
       });
     });
 
-    test("decode concatenation of multiple elements", () => {
+    it("decode concatenation of multiple elements", () => {
       const decoded = decode(Buffer.from("010101010102010103", "hex"));
       expect(decoded).toEqual({
         1: Buffer.from("010203", "hex"),
       });
     });
 
-    test("should throw on truncated buffer (incomplete header)", () => {
+    it("should throw on truncated buffer (incomplete header)", () => {
       // Only 1 byte — not enough for type + length
       expect(() => decode(Buffer.from("01", "hex"))).toThrow("incomplete type/length header");
     });
 
-    test("should throw when declared length exceeds remaining buffer", () => {
+    it("should throw when declared length exceeds remaining buffer", () => {
       // Type 0x01, length 0x05, but only 2 bytes of data follow
       expect(() => decode(Buffer.from("01050102", "hex"))).toThrow("declared length");
     });
 
-    test("should not throw on valid zero-length entry", () => {
+    it("should not throw on valid zero-length entry", () => {
       // Type 0x01, length 0x00
       expect(() => decode(Buffer.from("0100", "hex"))).not.toThrow();
     });
   });
 
   describe("decodeWithLists", () => {
-    test("decode single element", () => {
+    it("decode single element", () => {
       const decoded = decodeWithLists(Buffer.from("010101", "hex"));
       expect(decoded).toEqual({
         1: Buffer.from("01", "hex"),
       });
     });
 
-    test("decode multiple elements", () => {
+    it("decode multiple elements", () => {
       const decoded = decodeWithLists(Buffer.from("010101020102030103", "hex"));
       expect(decoded).toEqual({
         1: Buffer.from("01", "hex"),
@@ -129,7 +133,7 @@ describe("tlv", () => {
       });
     });
 
-    test("decode concatenation of multiple elements", () => {
+    it("decode concatenation of multiple elements", () => {
       // tlv entries longer than 255 are split over multiple entries
       // decodeWithList should reassemble them to a single entry!
       const content = Buffer.concat([
@@ -145,15 +149,15 @@ describe("tlv", () => {
       });
     });
 
-    test("decode list of entries", () => {
+    it("decode list of entries", () => {
       const content = Buffer.from(
-        "010101" +
-        "0000" +
-        "010102" +
-        "0000" +
-        "010103" +
-        "0000" +
-        "010104",
+        "010101"
+        + "0000"
+        + "010102"
+        + "0000"
+        + "010103"
+        + "0000"
+        + "010104",
         "hex",
       );
 
@@ -168,7 +172,7 @@ describe("tlv", () => {
       });
     });
 
-    test("decode list of entries where some are split due to size limits", () => {
+    it("decode list of entries where some are split due to size limits", () => {
       const content = Buffer.concat([
         Buffer.from("01010b", "hex"),
         Buffer.from("0000", "hex"),
@@ -190,38 +194,46 @@ describe("tlv", () => {
       });
     });
 
-    test("reject lists which are not properly separated with zero tlv type", () => {
+    it("reject lists which are not properly separated with zero tlv type", () => {
       expect(() => decodeWithLists(Buffer.from("01010a01010b", "hex")))
         .toThrow();
     });
 
-    test("reject an entry whose declared length exceeds the buffer instead of truncating it", () => {
+    it("reject an entry whose declared length exceeds the buffer instead of truncating it", () => {
       expect(() => decodeWithLists(Buffer.from("010aaa", "hex")))
         .toThrow("TLV decode failure: declared length 10 exceeds remaining buffer 1");
     });
 
-    test("reject a trailing byte which is not a complete type/length header", () => {
+    it("reject a trailing byte which is not a complete type/length header", () => {
       expect(() => decodeWithLists(Buffer.from("0101aa02", "hex")))
         .toThrow("TLV decode failure: incomplete type/length header");
     });
   });
 
   describe("decodeList", () => {
-    test("simple concatenated list buffer", () => {
+    it("simple concatenated list buffer", () => {
       const decoded = decodeList(Buffer.from("010101010102010103010104", "hex"), 0x01);
 
       expect(decoded).toEqual([
-        { 1: Buffer.from("01", "hex") },
-        { 1: Buffer.from("02", "hex") },
-        { 1: Buffer.from("03", "hex") },
-        { 1: Buffer.from("04", "hex") },
+        {
+          1: Buffer.from("01", "hex"),
+        },
+        {
+          1: Buffer.from("02", "hex"),
+        },
+        {
+          1: Buffer.from("03", "hex"),
+        },
+        {
+          1: Buffer.from("04", "hex"),
+        },
       ]);
     });
 
-    test("list buffer with multiple tlv entries", () => {
+    it("list buffer with multiple tlv entries", () => {
       const decoded = decodeList(Buffer.from(
-        "01010102010a" +
-        "01010202010b",
+        "01010102010a"
+        + "01010202010b",
         "hex",
       ), 0x01);
 
@@ -237,7 +249,7 @@ describe("tlv", () => {
       ]);
     });
 
-    test("concatenate multiple entries of same value", () => {
+    it("concatenate multiple entries of same value", () => {
       const decoded = decodeList(Buffer.from("01010102010a02010b", "hex"), 0x01);
 
       expect(decoded).toEqual([
@@ -248,14 +260,14 @@ describe("tlv", () => {
       ]);
     });
 
-    test("reject ill-formatted tlv list", () => {
+    it("reject ill-formatted tlv list", () => {
       expect(() => decodeList(Buffer.from("020101", "hex"), 0x01))
         .toThrow();
     });
   });
 
   describe("buffer", () => {
-    test("writeVariableUIntLE", () => {
+    it("writeVariableUIntLE", () => {
       // negative numbers are not allowed
       expect(() => writeVariableUIntLE(-1))
         .toThrow();
@@ -278,7 +290,7 @@ describe("tlv", () => {
       expect(buffer32.readUInt32LE(0)).toBe(input32);
       expect(readVariableUIntLE(buffer32)).toBe(input32);
 
-      const input64 = 2*0xFFFFFFFF;
+      const input64 = 2 * 0xFFFFFFFF;
       const buffer64 = writeVariableUIntLE(input64); // shifted by one
       expect(buffer64.length).toBe(8);
       // hex is just 32 bit 0xFF shifter by one

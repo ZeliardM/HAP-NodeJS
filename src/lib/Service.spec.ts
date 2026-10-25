@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { Characteristic } from "./Characteristic";
 import { SerializedService, Service } from "./Service";
 import * as uuid from "./util/uuid";

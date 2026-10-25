@@ -1,3 +1,4 @@
+import { expect } from "vitest";
 import tweetnacl, { BoxKeyPair } from "tweetnacl";
 import { HAPMimeTypes, PairingStates, TLVValues } from "../internal-types";
 import { HAPPairingHTTPCode } from "../lib/HAPServer";

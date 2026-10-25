@@ -1,4 +1,10 @@
-import crypto from "crypto";
+import type { Mock, MockInstance } from "vitest";
+
+import { Buffer } from "node:buffer";
+import crypto from "node:crypto";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
   AccessoriesResponse,
   CharacteristicJsonObject,
@@ -38,9 +44,8 @@ import { HapStatusError } from "./util/hapStatusError";
 import { awaitEventOnce, PromiseTimeout } from "./util/promise-utils";
 import * as uuid from "./util/uuid";
 import { toShortForm } from "./util/uuid";
-import Mock = jest.Mock;
 
-describe("Accessory", () => {
+describe("accessory", () => {
   const TEST_DISPLAY_NAME = "Test Accessory";
   const TEST_UUID = uuid.generate("HAP-NODEJS-TEST-ACCESSORY!");
 
@@ -55,7 +60,7 @@ describe("Accessory", () => {
 
   let accessoryInfoUnpaired: AccessoryInfo;
   let accessoryInfoPaired: AccessoryInfo;
-  const saveMock: Mock = jest.fn();
+  const saveMock: Mock = vi.fn();
 
   let callback: Mock;
   // a void promise to wait for the above callback to be called!
@@ -88,14 +93,15 @@ describe("Accessory", () => {
 
     connection = {
       username: clientUsername0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
-    callback = jest.fn();
+    callback = vi.fn();
     const originalReset = callback.mockReset;
     callback.mockReset = () => {
       const resetResult = originalReset();
-      callbackPromise = new Promise(resolve => {
+      callbackPromise = new Promise((resolve) => {
         callback.mockImplementationOnce(() => resolve());
       });
       return resetResult;
@@ -112,22 +118,22 @@ describe("Accessory", () => {
   });
 
   describe("constructor", () => {
-    test("fail to load with no display name", () => {
+    it("fail to load with no display name", () => {
       expect(() => new Accessory("", ""))
         .toThrow("non-empty displayName");
     });
 
-    test("fail to load with no UUID", () => {
+    it("fail to load with no UUID", () => {
       expect(() => new Accessory("Test", ""))
         .toThrow("valid UUID");
     });
 
-    test("fail to load with an invalid UUID", () => {
+    it("fail to load with an invalid UUID", () => {
       expect(() => new Accessory("Test", "test"))
         .toThrow("not a valid UUID");
     });
 
-    test("controllerStorage is constructed with the accessory UUID (homebridge#3928)", () => {
+    it("controllerStorage is constructed with the accessory UUID (homebridge#3928)", () => {
       // Regression: prior to the fix, `controllerStorage` was a class-field
       // initialiser that ran before `this.UUID` was assigned (under
       // target: ES2022 / native class fields), so the storage object
@@ -139,7 +145,7 @@ describe("Accessory", () => {
   });
 
   describe("handling services", () => {
-    test("addService", () => {
+    it("addService", () => {
       const existingCount = 1; // accessoryInformation service; protocolInformation is only added on publish
 
       const instance = new Service.Switch("Switch");
@@ -176,13 +182,12 @@ describe("Accessory", () => {
         .toBeUndefined();
     });
 
-    test("removeService", () => {
+    it("removeService", () => {
       const existingCount = 1; // accessoryInformation service; protocolInformation is only added on publish
 
       const instance = new Service.Switch("Switch");
       instance.setPrimaryService();
       expect(accessory.services.length).toEqual(existingCount);
-
 
       accessory.addService(instance);
       expect(accessory.services.length).toEqual(existingCount + 1);
@@ -202,7 +207,7 @@ describe("Accessory", () => {
       expect(outlet.linkedServices.length).toEqual(0);
     });
 
-    test("primary service handling", () => {
+    it("primary service handling", () => {
       const instance = new Service.Switch("Switch");
       instance.setPrimaryService();
       accessory.addService(instance);
@@ -234,10 +239,10 @@ describe("Accessory", () => {
   });
 
   describe("bridged accessories", () => {
-    test("addBridgedAccessory", () => {
+    it("addBridgedAccessory", () => {
       const bridge = new Bridge("TestBridge", uuid.generate("bridge test"));
 
-      bridge.addBridgedAccessories([ accessory ]);
+      bridge.addBridgedAccessories([accessory]);
       expect(bridge.bridged).toBeFalsy();
       expect(bridge.bridge).toBeUndefined();
       expect(accessory.bridged).toBeTruthy();
@@ -253,7 +258,7 @@ describe("Accessory", () => {
         .toThrow();
     });
 
-    test("removeBridgedAccessory", () => {
+    it("removeBridgedAccessory", () => {
       const bridge = new Bridge("TestBridge", uuid.generate("bridge test"));
 
       const validate = () => {
@@ -268,22 +273,22 @@ describe("Accessory", () => {
         expect(bridge.bridgedAccessories.includes(accessory)).toBeFalsy();
       };
 
-      bridge.addBridgedAccessories([ accessory ]);
+      bridge.addBridgedAccessories([accessory]);
       bridge.removeBridgedAccessory(accessory);
       validate();
 
-      bridge.addBridgedAccessories([ accessory ]);
-      bridge.removeBridgedAccessories([ accessory ]);
+      bridge.addBridgedAccessories([accessory]);
+      bridge.removeBridgedAccessories([accessory]);
       validate();
 
-      bridge.addBridgedAccessories([ accessory ]);
+      bridge.addBridgedAccessories([accessory]);
       bridge.removeAllBridgedAccessories();
       validate();
 
       expect(() => bridge.removeBridgedAccessory(accessory)).toThrow();
     });
 
-    test("getAccessoryByAID", () => {
+    it("getAccessoryByAID", () => {
       const bridge = new Bridge("TestBridge", uuid.generate("bridge test"));
       bridge.addBridgedAccessory(accessory);
 
@@ -298,7 +303,7 @@ describe("Accessory", () => {
       expect(accessory.getAccessoryByAID(2)).toBe(accessory);
     });
 
-    test("removing a bridged accessory drops the event registrations of connected clients", async () => {
+    it("removing a bridged accessory drops the event registrations of connected clients", async () => {
       const bridge = new Bridge("TestBridge", uuid.generate("bridge test"));
       bridge._identifierCache = new IdentifierCache(serverUsername);
       const registeredEvents = new Set<string>();
@@ -313,19 +318,21 @@ describe("Accessory", () => {
         disableEventNotificationsForAccessory: (aid: number) => HAPConnection.prototype.disableEventNotificationsForAccessory.call(client, aid),
       } as unknown as HAPServer;
 
-      const subscribe = (target: Accessory, characteristic: Characteristic) => new Promise<void>((resolve) => {
+      const subscribe = async (target: Accessory, characteristic: Characteristic) => {
+        const done = vi.fn();
         // @ts-expect-error: private access
         bridge.handleSetCharacteristics(client, {
           characteristics: [
             { aid: target.aid!, iid: characteristic.iid!, ev: true },
           ],
-        }, () => resolve());
-      });
+        }, done);
+        await vi.waitFor(() => expect(done).toHaveBeenCalled());
+      };
 
       const on = accessory.addService(Service.Switch, "Switch").getCharacteristic(Characteristic.On);
       bridge.addBridgedAccessory(accessory);
       bridge._assignIDs(bridge._identifierCache);
-      const unsubscribed = jest.fn();
+      const unsubscribed = vi.fn();
       on.on(CharacteristicEventTypes.UNSUBSCRIBE, unsubscribed);
       await subscribe(accessory, on);
 
@@ -339,14 +346,14 @@ describe("Accessory", () => {
       bridge.addBridgedAccessory(replacement);
       bridge._assignIDs(bridge._identifierCache);
       expect(replacementOn.iid).toBe(on.iid);
-      const subscribed = jest.fn();
+      const subscribed = vi.fn();
       replacementOn.on(CharacteristicEventTypes.SUBSCRIBE, subscribed);
       await subscribe(replacement, replacementOn);
       expect(subscribed).toHaveBeenCalledTimes(1);
     });
 
-    test("slow and timed out handlers are reported through the bridged accessory", async () => {
-      jest.useFakeTimers({ doNotFake: ["nextTick", "queueMicrotask"] });
+    it("slow and timed out handlers are reported through the bridged accessory", async () => {
+      vi.useFakeTimers();
 
       try {
         const bridge = new Bridge("TestBridge", uuid.generate("bridge test"));
@@ -374,14 +381,14 @@ describe("Accessory", () => {
           includeEvent: false,
           includeType: false,
           includePerms: false,
-        }, jest.fn());
+        }, vi.fn());
         // @ts-expect-error: private access
         bridge.handleSetCharacteristics(connection, {
           characteristics: [
             { aid: accessory.aid!, iid: on.iid!, value: true },
           ],
-        }, jest.fn());
-        jest.advanceTimersByTime(9000);
+        }, vi.fn());
+        vi.advanceTimersByTime(9000);
 
         expect(accessoryWarnings.map(([type]) => type)).toEqual([
           CharacteristicWarningType.SLOW_READ,
@@ -391,7 +398,7 @@ describe("Accessory", () => {
         ]);
         expect(accessoryWarnings[0][1]).toContain(accessory.displayName);
       } finally {
-        jest.useRealTimers();
+        vi.useRealTimers();
       }
     });
   });
@@ -400,18 +407,18 @@ describe("Accessory", () => {
     const setUp = (target: Accessory) => {
       target._identifierCache = new IdentifierCache(serverUsername);
       target._accessoryInfo = AccessoryInfo.create(serverUsername);
-      const updateAdvertisement = jest.fn();
+      const updateAdvertisement = vi.fn();
       target._advertiser = {
         updateAdvertisement,
-        destroy: jest.fn(),
+        destroy: vi.fn(),
       } as unknown as BonjourHAPAdvertiser;
       // @ts-expect-error: private access
       target._accessoryInfo.checkForCurrentConfigurationNumberIncrement(target.internalHAPRepresentation(), true); // what publish() does
       return updateAdvertisement;
     };
 
-    test("setProps after publish increments the configuration number, unless nothing changed", () => {
-      jest.useFakeTimers({ doNotFake: ["nextTick", "queueMicrotask"] });
+    it("setProps after publish increments the configuration number, unless nothing changed", () => {
+      vi.useFakeTimers();
 
       try {
         // created under the fake timers, so its queued configuration updates can be run
@@ -419,25 +426,25 @@ describe("Accessory", () => {
         const brightness = light.addService(Service.Lightbulb, "Light").getCharacteristic(Characteristic.Brightness);
         const updateAdvertisement = setUp(light);
         const configVersion = light._accessoryInfo!.getConfigVersion();
-        jest.advanceTimersByTime(1000); // the update queued by adding the service changes nothing
+        vi.advanceTimersByTime(1000); // the update queued by adding the service changes nothing
         expect(light._accessoryInfo!.getConfigVersion()).toBe(configVersion);
 
         brightness.setProps({ minValue: 0, maxValue: 100 }); // the defaults: nothing changes
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
         expect(light._accessoryInfo!.getConfigVersion()).toBe(configVersion);
         expect(updateAdvertisement).not.toHaveBeenCalled();
 
         brightness.setProps({ maxValue: 50 });
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
         expect(light._accessoryInfo!.getConfigVersion()).toBe(configVersion + 1);
         expect(updateAdvertisement).toHaveBeenCalledTimes(1);
       } finally {
-        jest.useRealTimers();
+        vi.useRealTimers();
       }
     });
 
-    test("setProps on a bridged accessory increments the configuration number of the bridge", () => {
-      jest.useFakeTimers({ doNotFake: ["nextTick", "queueMicrotask"] });
+    it("setProps on a bridged accessory increments the configuration number of the bridge", () => {
+      vi.useFakeTimers();
 
       try {
         const bridge = new Bridge("TestBridge", uuid.generate("bridge test"));
@@ -446,21 +453,21 @@ describe("Accessory", () => {
         bridge.addBridgedAccessory(light);
         const updateAdvertisement = setUp(bridge);
         const configVersion = bridge._accessoryInfo!.getConfigVersion();
-        jest.advanceTimersByTime(1000); // the update queued by adding the accessory changes nothing
+        vi.advanceTimersByTime(1000); // the update queued by adding the accessory changes nothing
         expect(bridge._accessoryInfo!.getConfigVersion()).toBe(configVersion);
 
         brightness.setProps({ minStep: 5 });
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
         expect(bridge._accessoryInfo!.getConfigVersion()).toBe(configVersion + 1);
         expect(updateAdvertisement).toHaveBeenCalledTimes(1);
       } finally {
-        jest.useRealTimers();
+        vi.useRealTimers();
       }
     });
   });
 
   describe("accessory controllers", () => {
-    test("configureController deserialize controllers and remove/add/replace services correctly", () => {
+    it("configureController deserialize controllers and remove/add/replace services correctly", () => {
       accessory.configureController(new TestController());
 
       const serialized = Accessory.serialize(accessory);
@@ -479,7 +486,7 @@ describe("Accessory", () => {
   });
 
   describe("publish", () => {
-    test("blocks a standalone accessory containing invalid characteristic permissions", async () => {
+    it("blocks a standalone accessory containing invalid characteristic permissions", async () => {
       const service = accessory.addService(Service.Switch);
       const characteristic = service.getCharacteristic(Characteristic.On);
       characteristic.props.perms = [null as unknown as Perms, Perms.NOTIFY];
@@ -496,14 +503,13 @@ describe("Accessory", () => {
       expect(accessory.initialized).toBe(false);
     });
 
-    test("validates bridged accessories when the bridge is validated", () => {
+    it("validates bridged accessories when the bridge is validated", () => {
       const bridge = new Bridge("TestBridge", uuid.generate("bridge validation delegation"));
       const bridgedAccessory = new Accessory("Bridged Accessory", uuid.generate("validated bridged accessory"));
       bridgedAccessory.addService(Service.Switch);
       bridge.addBridgedAccessory(bridgedAccessory);
 
-      // @ts-expect-error: spying on private method
-      const validateSpy = jest.spyOn(bridgedAccessory, "validateAccessory");
+      const validateSpy = vi.spyOn(bridgedAccessory, "validateAccessory");
       // @ts-expect-error: private access
       bridge.validateAccessory(true);
 
@@ -518,8 +524,8 @@ describe("Accessory", () => {
       let offendingService: Service;
       let offendingCharacteristic: Characteristic;
       let warningHandler: Mock;
-      let consoleErrorSpy: jest.SpyInstance;
-      let enqueueSpy: jest.SpyInstance;
+      let consoleErrorSpy: MockInstance;
+      let enqueueSpy: MockInstance;
 
       // Serves the /accessories route the way a controller would and reports the aids that came back, which is everything HomeKit gets to see.
       const servedAids = async (): Promise<number[]> => {
@@ -547,15 +553,14 @@ describe("Accessory", () => {
         offendingService = offendingAccessory.addService(Service.Switch);
         offendingCharacteristic = offendingService.getCharacteristic(Characteristic.On);
 
-        bridge.addBridgedAccessories([ validAccessory, offendingAccessory ]);
+        bridge.addBridgedAccessories([validAccessory, offendingAccessory]);
         bridge._identifierCache = new IdentifierCache(serverUsername);
 
-        warningHandler = jest.fn();
+        warningHandler = vi.fn();
         offendingAccessory.on(AccessoryEventTypes.CHARACTERISTIC_WARNING, warningHandler);
 
-        consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-        // @ts-expect-error: spying on private method
-        enqueueSpy = jest.spyOn(bridge, "enqueueConfigurationUpdate");
+        consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        enqueueSpy = vi.spyOn(bridge, "enqueueConfigurationUpdate");
       });
 
       afterEach(() => {
@@ -563,12 +568,12 @@ describe("Accessory", () => {
         enqueueSpy.mockRestore();
       });
 
-      test("serves the bridge and its valid accessories only, attributing the fault once", async () => {
+      it("serves the bridge and its valid accessories only, attributing the fault once", async () => {
         corruptPermissions();
 
         const aids = await servedAids();
 
-        expect(aids).toEqual([ bridge.aid, validAccessory.aid ]);
+        expect(aids).toEqual([bridge.aid, validAccessory.aid]);
         expect(aids).not.toContain(offendingAccessory.aid);
 
         // the exclusion is presentation-level: the accessory is still bridged, and only what we serve changed
@@ -584,28 +589,28 @@ describe("Accessory", () => {
         }));
       });
 
-      test("excludes an accessory whose permissions are corrupted after it was already served", async () => {
-        expect(await servedAids()).toEqual([ bridge.aid, validAccessory.aid, offendingAccessory.aid ]);
+      it("excludes an accessory whose permissions are corrupted after it was already served", async () => {
+        expect(await servedAids()).toEqual([bridge.aid, validAccessory.aid, offendingAccessory.aid]);
 
         corruptPermissions();
 
-        expect(await servedAids()).toEqual([ bridge.aid, validAccessory.aid ]);
+        expect(await servedAids()).toEqual([bridge.aid, validAccessory.aid]);
       });
 
-      test("serves the accessory again once its permissions are corrected, under the same aid", async () => {
+      it("serves the accessory again once its permissions are corrected, under the same aid", async () => {
         corruptPermissions();
         expect(await servedAids()).not.toContain(offendingAccessory.aid);
 
         const quarantinedAid = offendingAccessory.aid;
         warningHandler.mockClear();
-        offendingCharacteristic.props.perms = [ Perms.PAIRED_READ, Perms.NOTIFY ];
+        offendingCharacteristic.props.perms = [Perms.PAIRED_READ, Perms.NOTIFY];
 
-        expect(await servedAids()).toEqual([ bridge.aid, validAccessory.aid, offendingAccessory.aid ]);
+        expect(await servedAids()).toEqual([bridge.aid, validAccessory.aid, offendingAccessory.aid]);
         expect(offendingAccessory.aid).toEqual(quarantinedAid);
         expect(warningHandler).not.toHaveBeenCalled();
       });
 
-      test("enqueues a configuration update on entering and on leaving quarantine", async () => {
+      it("enqueues a configuration update on entering and on leaving quarantine", async () => {
         await servedAids();
         enqueueSpy.mockClear();
 
@@ -613,12 +618,12 @@ describe("Accessory", () => {
         await servedAids();
         expect(enqueueSpy).toHaveBeenCalledTimes(1);
 
-        offendingCharacteristic.props.perms = [ Perms.PAIRED_READ, Perms.NOTIFY ];
+        offendingCharacteristic.props.perms = [Perms.PAIRED_READ, Perms.NOTIFY];
         await servedAids();
         expect(enqueueSpy).toHaveBeenCalledTimes(2);
       });
 
-      test("settles while the accessory stays quarantined, without repeating itself", async () => {
+      it("settles while the accessory stays quarantined, without repeating itself", async () => {
         corruptPermissions();
 
         await servedAids();
@@ -629,15 +634,15 @@ describe("Accessory", () => {
         expect(enqueueSpy).toHaveBeenCalledTimes(1);
       });
 
-      test("quarantines an accessory whose permissions cannot be JSON-serialized, without failing the request", async () => {
-        offendingCharacteristic.props.perms = [ 1n ] as unknown as Perms[];
+      it("quarantines an accessory whose permissions cannot be JSON-serialized, without failing the request", async () => {
+        offendingCharacteristic.props.perms = [1n] as unknown as Perms[];
 
-        expect(await servedAids()).toEqual([ bridge.aid, validAccessory.aid ]);
+        expect(await servedAids()).toEqual([bridge.aid, validAccessory.aid]);
         expect(warningHandler).toHaveBeenCalledTimes(1);
       });
 
-      test("quarantines an accessory carrying a characteristic that was constructed with invalid permissions", async () => {
-        const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      it("quarantines an accessory carrying a characteristic that was constructed with invalid permissions", async () => {
+        const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
         const malformedCharacteristic = new Characteristic("Malformed", uuid.generate("characteristic constructed with invalid permissions"), {
           format: Formats.BOOL,
@@ -650,7 +655,7 @@ describe("Accessory", () => {
 
         offendingService.addCharacteristic(malformedCharacteristic);
 
-        expect(await servedAids()).toEqual([ bridge.aid, validAccessory.aid ]);
+        expect(await servedAids()).toEqual([bridge.aid, validAccessory.aid]);
         expect(warningHandler).toHaveBeenCalledTimes(1);
         expect(warningHandler).toHaveBeenCalledWith(expect.objectContaining({
           characteristic: malformedCharacteristic,
@@ -660,7 +665,7 @@ describe("Accessory", () => {
         consoleWarnSpy.mockRestore();
       });
 
-      test("excludes the same accessory from the configuration that determines the configuration number", async () => {
+      it("excludes the same accessory from the configuration that determines the configuration number", async () => {
         corruptPermissions();
 
         const aids = await servedAids();
@@ -671,13 +676,13 @@ describe("Accessory", () => {
       });
     });
 
-    test.each`
+    it.each`
       advertiser                 | republish
       ${MDNSAdvertiser.BONJOUR}  | ${false}
       ${MDNSAdvertiser.CIAO}     | ${false}
       ${MDNSAdvertiser.BONJOUR}  | ${true}
       ${MDNSAdvertiser.CIAO}     | ${true}
-    `("Clean Accessory publish and unpublish (advertiser: $advertiser; republish: $republish)", async ({ advertiser, republish }) => {
+    `("clean Accessory publish and unpublish (advertiser: $advertiser; republish: $republish)", async ({ advertiser, republish }) => {
       const switchService = new Service.Switch("My Example Switch");
       accessory.addService(switchService);
 
@@ -685,7 +690,7 @@ describe("Accessory", () => {
         username: serverUsername,
         pincode: "000-00-000",
         category: Categories.SWITCH,
-        advertiser: advertiser,
+        advertiser,
       };
 
       await accessory.publish(publishInfo);
@@ -714,7 +719,7 @@ describe("Accessory", () => {
       await awaitEventOnce(accessory, AccessoryEventTypes.ADVERTISED);
     });
 
-    test("Clean Accessory publish and unpublish with default advertiser selection", async () => {
+    it("clean Accessory publish and unpublish with default advertiser selection", async () => {
       const switchService = new Service.Switch("My Example Switch");
       accessory.addService(switchService);
 
@@ -734,18 +739,18 @@ describe("Accessory", () => {
     });
   });
 
-  describe("Accessory and Service naming checks", () => {
-    let consoleWarnSpy: jest.SpyInstance;
+  describe("accessory and Service naming checks", () => {
+    let consoleWarnSpy: MockInstance;
 
     beforeEach(() => {
-      consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     });
 
     afterEach(() => {
       consoleWarnSpy.mockRestore();
     });
 
-    test("Accessory Name ending with !", async () => {
+    it("accessory Name ending with !", async () => {
       const accessoryBadName = new Accessory("Bad Name!", uuid.generate("Bad Name"));
 
       const publishInfo: PublishInfo = {
@@ -757,6 +762,7 @@ describe("Accessory", () => {
 
       await accessoryBadName.publish(publishInfo);
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+
       // eslint-disable-next-line max-len
       expect(consoleWarnSpy).toHaveBeenCalledWith("HAP-NodeJS WARNING: The accessory 'Bad Name!' has an invalid 'Name' characteristic ('Bad Name!'). Please ensure the name starts and ends with a letter or number. Only letters, numbers, spaces, apostrophes, and common punctuation are supported. Avoid emojis or unsupported symbols. This may prevent the accessory from being added in the Home App or cause unresponsiveness.");
 
@@ -765,7 +771,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Accessory Name containing !", async () => {
+    it("accessory Name containing !", async () => {
       const accessoryBadName = new Accessory("Bad ! Name", uuid.generate("Bad Name"));
 
       const publishInfo: PublishInfo = {
@@ -783,7 +789,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Accessory Name containing '", async () => {
+    it("accessory Name containing '", async () => {
       const accessoryBadName = new Accessory("Bad ' Name", uuid.generate("Bad ' Name"));
 
       const publishInfo: PublishInfo = {
@@ -801,7 +807,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Accessory Name starting with '", async () => {
+    it("accessory Name starting with '", async () => {
       const accessoryBadName = new Accessory("'Bad Name", uuid.generate("Bad Name"));
 
       const publishInfo: PublishInfo = {
@@ -813,6 +819,7 @@ describe("Accessory", () => {
 
       await accessoryBadName.publish(publishInfo);
       expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
+
       // eslint-disable-next-line max-len
       expect(consoleWarnSpy).toHaveBeenCalledWith("HAP-NodeJS WARNING: The accessory ''Bad Name' has an invalid 'Name' characteristic (''Bad Name'). Please ensure the name starts and ends with a letter or number. Only letters, numbers, spaces, apostrophes, and common punctuation are supported. Avoid emojis or unsupported symbols. This may prevent the accessory from being added in the Home App or cause unresponsiveness.");
 
@@ -821,7 +828,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Service Name containing !", async () => {
+    it("service Name containing !", async () => {
       const switchService = new Service.Switch("My Bad ! Switch");
       const accessoryBadName = new Accessory("Bad Name", uuid.generate("Bad Name"));
       accessoryBadName.addService(switchService);
@@ -841,7 +848,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Service Name ending with !", async () => {
+    it("service Name ending with !", async () => {
       const switchService = new Service.Switch("My Bad Switch!");
       const accessoryBadName = new Accessory("Bad Name", uuid.generate("Bad Name"));
       accessoryBadName.addService(switchService);
@@ -855,6 +862,7 @@ describe("Accessory", () => {
 
       await accessoryBadName.publish(publishInfo);
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+
       // eslint-disable-next-line max-len
       expect(consoleWarnSpy).toHaveBeenCalledWith("HAP-NodeJS WARNING: The accessory 'My Bad Switch!' has an invalid 'Name' characteristic ('My Bad Switch!'). Please ensure the name starts and ends with a letter or number. Only letters, numbers, spaces, apostrophes, and common punctuation are supported. Avoid emojis or unsupported symbols. This may prevent the accessory from being added in the Home App or cause unresponsiveness.");
 
@@ -863,7 +871,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Service Name containing '", async () => {
+    it("service Name containing '", async () => {
       const switchService = new Service.Switch("My Bad ' Switch");
       const accessoryBadName = new Accessory("Bad Name", uuid.generate("Bad Name"));
       accessoryBadName.addService(switchService);
@@ -883,7 +891,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Service Name ending with '", async () => {
+    it("service Name ending with '", async () => {
       const switchService = new Service.Switch("My Bad Switch'");
       const accessoryBadName = new Accessory("Bad Name", uuid.generate("Bad Name"));
       accessoryBadName.addService(switchService);
@@ -897,6 +905,7 @@ describe("Accessory", () => {
 
       await accessoryBadName.publish(publishInfo);
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+
       // eslint-disable-next-line max-len
       expect(consoleWarnSpy).toHaveBeenCalledWith("HAP-NodeJS WARNING: The accessory 'My Bad Switch'' has an invalid 'Name' characteristic ('My Bad Switch''). Please ensure the name starts and ends with a letter or number. Only letters, numbers, spaces, apostrophes, and common punctuation are supported. Avoid emojis or unsupported symbols. This may prevent the accessory from being added in the Home App or cause unresponsiveness.");
 
@@ -905,7 +914,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Service Name beginning with '", async () => {
+    it("service Name beginning with '", async () => {
       const switchService = new Service.Switch("'My Bad Switch");
       const accessoryBadName = new Accessory("Bad Name", uuid.generate("Bad Name"));
       accessoryBadName.addService(switchService);
@@ -919,6 +928,7 @@ describe("Accessory", () => {
 
       await accessoryBadName.publish(publishInfo);
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+
       // eslint-disable-next-line max-len
       expect(consoleWarnSpy).toHaveBeenCalledWith("HAP-NodeJS WARNING: The accessory ''My Bad Switch' has an invalid 'Name' characteristic (''My Bad Switch'). Please ensure the name starts and ends with a letter or number. Only letters, numbers, spaces, apostrophes, and common punctuation are supported. Avoid emojis or unsupported symbols. This may prevent the accessory from being added in the Home App or cause unresponsiveness.");
 
@@ -927,7 +937,7 @@ describe("Accessory", () => {
       await accessoryBadName?.destroy();
     });
 
-    test("Service ConfiguredName is not subject to Name character checks", async () => {
+    it("service ConfiguredName is not subject to Name character checks", async () => {
       // ConfiguredName is the user-editable label on services like InputSource,
       // Television and SmartSpeaker. Home accepts a wider character set there
       // than the HIG suggests for Name, so HAP-NodeJS must not warn on it.
@@ -963,16 +973,16 @@ describe("Accessory", () => {
       defaultPairingInfo = { username: clientUsername0, publicKey: clientPublicKey0, permission: PermissionTypes.ADMIN };
     });
 
-    test("handleInitialPairSetupFinished", async () => {
+    it("handleInitialPairSetupFinished", async () => {
       const advertiser = new BonjourHAPAdvertiser(accessoryInfoUnpaired);
-      advertiser.updateAdvertisement = jest.fn();
+      advertiser.updateAdvertisement = vi.fn();
       accessory._advertiser = advertiser;
 
-      accessoryInfoUnpaired.addPairedClient = jest.fn();
+      accessoryInfoUnpaired.addPairedClient = vi.fn();
       accessory._accessoryInfo = accessoryInfoUnpaired;
 
       const publicKey = crypto.randomBytes(32);
-      const callback = jest.fn();
+      const callback = vi.fn();
       // @ts-expect-error: private access
       accessory.handleInitialPairSetupFinished(clientUsername0, publicKey, callback);
 
@@ -987,21 +997,21 @@ describe("Accessory", () => {
     });
 
     describe("handleAddPairing", () => {
-      test("unavailable", () => {
+      it("unavailable", () => {
         // @ts-expect-error: private access
         accessory.handleAddPairing(connection, clientUsername1, clientPublicKey1, PermissionTypes.USER, callback);
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.UNAVAILABLE);
       });
 
-      test("missing admin permissions", () => {
+      it("missing admin permissions", () => {
         accessory._accessoryInfo = accessoryInfoUnpaired;
         // @ts-expect-error: private access
         accessory.handleAddPairing(connection, clientUsername1, clientPublicKey1, PermissionTypes.USER, callback);
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.AUTHENTICATION);
       });
 
-      test.each([PermissionTypes.USER, PermissionTypes.ADMIN])(
-        "adding pairing: %p", type => {
+      it.each([PermissionTypes.USER, PermissionTypes.ADMIN])(
+        "adding pairing: %p", (type) => {
           accessory._accessoryInfo = accessoryInfoPaired;
 
           // @ts-expect-error: private access
@@ -1015,22 +1025,26 @@ describe("Accessory", () => {
           expect(accessoryInfoPaired.listPairings()).toEqual(expectedPairings);
 
           expect(accessoryInfoPaired.pairedAdminClients)
-            .toEqual(type === PermissionTypes.ADMIN ? 2 : 1);
+            .toEqual(type === PermissionTypes.ADMIN
+              ? 2
+              : 1);
 
           expect(saveMock).toHaveBeenCalledTimes(1);
         });
 
-      test.each([
+      it.each([
         { previous: PermissionTypes.USER, update: PermissionTypes.ADMIN },
         { previous: PermissionTypes.ADMIN, update: PermissionTypes.USER },
         { previous: PermissionTypes.USER, update: PermissionTypes.USER },
         { previous: PermissionTypes.ADMIN, update: PermissionTypes.ADMIN },
       ])(
-        "update pairing: %p", type => {
+        "update pairing: %p", (type) => {
           accessory._accessoryInfo = accessoryInfoPaired;
           accessoryInfoPaired.addPairedClient(clientUsername1, clientPublicKey1, type.previous);
           expect(accessoryInfoPaired.pairedAdminClients)
-            .toEqual(type.previous === PermissionTypes.ADMIN ? 2 : 1);
+            .toEqual(type.previous === PermissionTypes.ADMIN
+              ? 2
+              : 1);
 
           // @ts-expect-error: private access
           accessory.handleAddPairing(connection, clientUsername1, clientPublicKey1, type.update, callback);
@@ -1043,12 +1057,14 @@ describe("Accessory", () => {
           expect(accessoryInfoPaired.listPairings()).toEqual(expectedPairings);
 
           expect(accessoryInfoPaired.pairedAdminClients)
-            .toEqual(type.update === PermissionTypes.ADMIN ? 2 : 1);
+            .toEqual(type.update === PermissionTypes.ADMIN
+              ? 2
+              : 1);
 
           expect(saveMock).toHaveBeenCalledTimes(1);
         });
 
-      test("update permission with non-matching public key", () => {
+      it("update permission with non-matching public key", () => {
         accessory._accessoryInfo = accessoryInfoPaired;
         accessoryInfoPaired.addPairedClient(clientUsername1, clientPublicKey1, PermissionTypes.USER);
 
@@ -1057,7 +1073,7 @@ describe("Accessory", () => {
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.UNKNOWN);
       });
 
-      test("update permission with a public key which only differs in bytes that are not valid UTF-8", () => {
+      it("update permission with a public key which only differs in bytes that are not valid UTF-8", () => {
         // 0x80 and 0x81 are both a lone UTF-8 continuation byte, so toString() turns both into the same U+FFFD
         const existingKey = Buffer.alloc(32, 0x80);
         accessory._accessoryInfo = accessoryInfoPaired;
@@ -1072,31 +1088,34 @@ describe("Accessory", () => {
 
     describe("handleRemovePairing", () => {
       let storage: typeof EventedHTTPServer.destroyExistingConnectionsAfterUnpair;
+
       beforeEach(() => {
         storage = EventedHTTPServer.destroyExistingConnectionsAfterUnpair;
-        EventedHTTPServer.destroyExistingConnectionsAfterUnpair = jest.fn();
+        EventedHTTPServer.destroyExistingConnectionsAfterUnpair = vi.fn();
       });
 
       afterEach(() => {
         EventedHTTPServer.destroyExistingConnectionsAfterUnpair = storage;
       });
 
-      test("unavailable", () => {
+      it("unavailable", () => {
         // @ts-expect-error: private access
         accessory.handleRemovePairing(connection, clientUsername1, callback);
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.UNAVAILABLE);
       });
 
-      test("missing admin permissions", () => {
+      it("missing admin permissions", () => {
         accessory._accessoryInfo = accessoryInfoUnpaired;
         // @ts-expect-error: private access
         accessory.handleRemovePairing(connection, clientUsername1, callback);
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.AUTHENTICATION);
       });
 
-      test.each([PermissionTypes.ADMIN, PermissionTypes.USER])(
-        "remove pairing: %s", type => {
-          const count = type === PermissionTypes.ADMIN ? 2 : 1;
+      it.each([PermissionTypes.ADMIN, PermissionTypes.USER])(
+        "remove pairing: %s", (type) => {
+          const count = type === PermissionTypes.ADMIN
+            ? 2
+            : 1;
           accessory._accessoryInfo = accessoryInfoPaired;
           accessoryInfoPaired.addPairedClient(clientUsername1, clientPublicKey1, type);
           expect(accessoryInfoPaired.pairedAdminClients).toEqual(count);
@@ -1106,7 +1125,7 @@ describe("Accessory", () => {
           expect(callback).toHaveBeenCalledWith(0);
 
           expect(accessoryInfoPaired.listPairings())
-            .toEqual([ defaultPairingInfo ]);
+            .toEqual([defaultPairingInfo]);
           expect(accessoryInfoPaired.pairedAdminClients).toEqual(1);
 
           expect(EventedHTTPServer.destroyExistingConnectionsAfterUnpair).toHaveBeenCalledTimes(1);
@@ -1114,12 +1133,12 @@ describe("Accessory", () => {
             .toHaveBeenCalledWith(connection, clientUsername1);
         });
 
-      test("remove last ADMIN pairing", () => {
+      it("remove last ADMIN pairing", () => {
         accessory._accessoryInfo = accessoryInfoPaired;
         accessoryInfoPaired.addPairedClient(clientUsername1, clientPublicKey1, PermissionTypes.USER);
 
         // a mock which just forwards to the normal function call, so that data integrity is ensured
-        const _removePairedClient0Mock = jest.fn();
+        const _removePairedClient0Mock = vi.fn();
         // @ts-expect-error: private access
         _removePairedClient0Mock.mockImplementation(accessoryInfoPaired._removePairedClient0);
         // @ts-expect-error: private access
@@ -1129,9 +1148,9 @@ describe("Accessory", () => {
 
         // after we removed pairing we also expect that the accessory is advertised as unpaired
         const advertiser = new BonjourHAPAdvertiser(accessoryInfoUnpaired);
-        advertiser.updateAdvertisement = jest.fn();
+        advertiser.updateAdvertisement = vi.fn();
         accessory._advertiser = advertiser;
-        const eventMock = jest.fn();
+        const eventMock = vi.fn();
         accessory.on(AccessoryEventTypes.UNPAIRED, eventMock);
 
         // @ts-expect-error: private access
@@ -1157,13 +1176,13 @@ describe("Accessory", () => {
     });
 
     describe("handleListPairings", () => {
-      test("unavailable", () => {
+      it("unavailable", () => {
         // @ts-expect-error: private access
         accessory.handleListPairings(connection, callback);
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.UNAVAILABLE);
       });
 
-      test("missing admin permissions", () => {
+      it("missing admin permissions", () => {
         accessory._accessoryInfo = accessoryInfoUnpaired;
         // @ts-expect-error: private access
         accessory.handleListPairings(connection, callback);
@@ -1177,11 +1196,11 @@ describe("Accessory", () => {
         expect(callback).toHaveBeenCalledWith(TLVErrorCode.AUTHENTICATION);
       });
 
-      test("list pairings", () => {
+      it("list pairings", () => {
         accessory._accessoryInfo = accessoryInfoPaired;
         // @ts-expect-error: private access
         accessory.handleListPairings(connection, callback);
-        expect(callback).toHaveBeenCalledWith(0, [ defaultPairingInfo ]);
+        expect(callback).toHaveBeenCalledWith(0, [defaultPairingInfo]);
       });
     });
   });
@@ -1210,7 +1229,7 @@ describe("Accessory", () => {
 
     beforeEach(() => {
       const loadBackup = AccessoryInfo.load;
-      AccessoryInfo.load = jest.fn(() => {
+      AccessoryInfo.load = vi.fn(() => {
         // inject our mocked accessoryInfo object
         return accessoryInfoPaired;
       });
@@ -1237,7 +1256,7 @@ describe("Accessory", () => {
       expect(aid).toEqual(accessory.aid);
     });
 
-    test("purgeUnusedIDs", () => {
+    it("purgeUnusedIDs", () => {
       expect(accessory.shouldPurgeUnusedIDs).toBeTruthy();
       accessory.purgeUnusedIDs();
       expect(accessory.shouldPurgeUnusedIDs).toBeTruthy();
@@ -1252,7 +1271,7 @@ describe("Accessory", () => {
       expect(accessory.shouldPurgeUnusedIDs).toBeTruthy();
     });
 
-    test("setupURI", () => {
+    it("setupURI", () => {
       let setupURI = accessory.setupURI();
 
       const originalSetupURI = setupURI;
@@ -1265,7 +1284,7 @@ describe("Accessory", () => {
 
       expect(setupId).toEqual(accessory._setupID);
 
-      const payload = parseInt(encodedPayload, 36);
+      const payload = Number.parseInt(encodedPayload, 36);
       const low = payload & 0xFFFFFFFF;
       const high = (payload - low) / 0x100000000;
 
@@ -1295,7 +1314,7 @@ describe("Accessory", () => {
         characteristicConstructor: new () => Characteristic,
         iid: number,
         value?: CharacteristicValue,
-      ): Promise<CharacteristicJsonObject>  => {
+      ): Promise<CharacteristicJsonObject> => {
         const characteristic = new characteristicConstructor();
         if (value !== undefined) {
           characteristic.value = value;
@@ -1304,7 +1323,7 @@ describe("Accessory", () => {
         return characteristic.toHAP(connection);
       };
 
-      test("test accessories database retrieval", async () => {
+      it("accessories database retrieval", async () => {
         // @ts-expect-error: private access
         accessory.handleAccessories(connection, callback);
 
@@ -1312,44 +1331,46 @@ describe("Accessory", () => {
 
         // TODO test Service.toHAP and Characteristic.toHAP separately!
         const expected: AccessoriesResponse = {
-          accessories: [{
-            aid: aid,
-            services: [
-              {
-                iid: iids.accessoryInformation,
-                type: toShortForm(Service.AccessoryInformation.UUID),
-                hidden: undefined,
-                primary: undefined,
-                characteristics: [
-                  await characteristicHAPInfo(Characteristic.Identify, iids.identify),
-                  await characteristicHAPInfo(Characteristic.Manufacturer, iids.manufacturer),
-                  await characteristicHAPInfo(Characteristic.Model, iids.model),
-                  await characteristicHAPInfo(Characteristic.Name, iids.accessoryName, accessory.displayName),
-                  await characteristicHAPInfo(Characteristic.SerialNumber, iids.serialNumber),
-                  await characteristicHAPInfo(Characteristic.FirmwareRevision, iids.firmwareRevision),
-                ],
-              },
-              {
-                iid: iids.switch,
-                type: toShortForm(Service.Switch.UUID),
-                hidden: undefined,
-                primary: undefined,
-                characteristics: [
-                  await characteristicHAPInfo(Characteristic.Name, iids.switchName, "Switch"),
-                  await characteristicHAPInfo(Characteristic.On, iids.on, false),
-                ],
-              },
-              {
-                iid: iids.protocolInformation,
-                type: toShortForm(Service.ProtocolInformation.UUID),
-                hidden: undefined,
-                primary: undefined,
-                characteristics: [
-                  await characteristicHAPInfo(Characteristic.Version, iids.version, "1.1.0"),
-                ],
-              },
-            ],
-          }],
+          accessories: [
+            {
+              aid,
+              services: [
+                {
+                  iid: iids.accessoryInformation,
+                  type: toShortForm(Service.AccessoryInformation.UUID),
+                  hidden: undefined,
+                  primary: undefined,
+                  characteristics: [
+                    await characteristicHAPInfo(Characteristic.Identify, iids.identify),
+                    await characteristicHAPInfo(Characteristic.Manufacturer, iids.manufacturer),
+                    await characteristicHAPInfo(Characteristic.Model, iids.model),
+                    await characteristicHAPInfo(Characteristic.Name, iids.accessoryName, accessory.displayName),
+                    await characteristicHAPInfo(Characteristic.SerialNumber, iids.serialNumber),
+                    await characteristicHAPInfo(Characteristic.FirmwareRevision, iids.firmwareRevision),
+                  ],
+                },
+                {
+                  iid: iids.switch,
+                  type: toShortForm(Service.Switch.UUID),
+                  hidden: undefined,
+                  primary: undefined,
+                  characteristics: [
+                    await characteristicHAPInfo(Characteristic.Name, iids.switchName, "Switch"),
+                    await characteristicHAPInfo(Characteristic.On, iids.on, false),
+                  ],
+                },
+                {
+                  iid: iids.protocolInformation,
+                  type: toShortForm(Service.ProtocolInformation.UUID),
+                  hidden: undefined,
+                  primary: undefined,
+                  characteristics: [
+                    await characteristicHAPInfo(Characteristic.Version, iids.version, "1.1.0"),
+                  ],
+                },
+              ],
+            },
+          ],
         };
         expect(callback).toHaveBeenCalledTimes(1);
         expect(callback).toHaveBeenCalledWith(undefined, expected);
@@ -1383,11 +1404,13 @@ describe("Accessory", () => {
         callback.mockReset();
       };
 
-      test("read Switch.On characteristic", async () => {
+      it("read Switch.On characteristic", async () => {
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           value: 0,
         });
@@ -1398,17 +1421,21 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.OUT_OF_RESOURCE,
         });
       });
 
-      test("read non-existent characteristic", async () => {
+      it("read non-existent characteristic", async () => {
         await testRequestResponse({
-          ids: [{ aid: 2, iid: iids.on }],
+          ids: [
+            { aid: 2, iid: iids.on },
+          ],
         }, {
           aid: 2,
           iid: iids.on,
@@ -1416,28 +1443,34 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          ids: [{ aid: aid, iid: 15 }],
+          ids: [
+            { aid, iid: 15 },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: 15,
           status: HAPStatus.INVALID_VALUE_IN_REQUEST,
         });
       });
 
-      test("reading write-only characteristic", async () => {
+      it("reading write-only characteristic", async () => {
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.identify }],
+          ids: [
+            { aid, iid: iids.identify },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.identify,
           status: HAPStatus.WRITE_ONLY_CHARACTERISTIC,
         });
       });
 
-      test("read includeMeta, includePerms, includeType, includeEvent", async () => {
-        const ids = [{ aid: aid, iid: iids.on }];
+      it("read includeMeta, includePerms, includeType, includeEvent", async () => {
+        const ids = [
+          { aid, iid: iids.on },
+        ];
         const partialExpectedResponse = {
-          aid: aid,
+          aid,
           iid: iids.on,
           value: 0,
         };
@@ -1455,7 +1488,7 @@ describe("Accessory", () => {
         accessory._assignIDs(accessory._identifierCache!);
 
         await testRequestResponse({
-          ids: ids,
+          ids,
           includeMeta: true,
         }, {
           ...partialExpectedResponse,
@@ -1463,10 +1496,12 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          ids: [{ aid: aid, iid: customCharacteristic.iid! }],
+          ids: [
+            { aid, iid: customCharacteristic.iid! },
+          ],
           includeMeta: true,
         }, {
-          aid: aid,
+          aid,
           iid: customCharacteristic.iid!,
           value: 20,
           format: Formats.UINT64,
@@ -1477,10 +1512,12 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.serialNumber }],
+          ids: [
+            { aid, iid: iids.serialNumber },
+          ],
           includeMeta: true,
         }, {
-          aid: aid,
+          aid,
           iid: 6,
           value: "Default-SerialNumber",
           format: Formats.STRING,
@@ -1488,7 +1525,7 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          ids: ids,
+          ids,
           includePerms: true,
         }, {
           ...partialExpectedResponse,
@@ -1496,20 +1533,19 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          ids: ids,
+          ids,
           includeType: true,
         }, {
           ...partialExpectedResponse,
           type: toShortForm(Characteristic.On.UUID),
         });
 
-
-        const hasEventNotificationsMock: Mock<boolean, [number, number]> = jest.fn();
+        const hasEventNotificationsMock: Mock<(aid: number, iid: number) => boolean> = vi.fn();
         connection.hasEventNotifications = hasEventNotificationsMock;
 
         hasEventNotificationsMock.mockImplementationOnce(() => true);
         await testRequestResponse({
-          ids: ids,
+          ids,
           includeEvent: true,
         }, {
           ...partialExpectedResponse,
@@ -1520,7 +1556,7 @@ describe("Accessory", () => {
 
         hasEventNotificationsMock.mockImplementationOnce(() => false);
         await testRequestResponse({
-          ids: ids,
+          ids,
           includeEvent: true,
         }, {
           ...partialExpectedResponse,
@@ -1529,24 +1565,28 @@ describe("Accessory", () => {
         expect(hasEventNotificationsMock).toHaveBeenCalledWith(aid, iids.on);
       });
 
-      test("reading adminOnly", async () => {
+      it("reading adminOnly", async () => {
         onCharacteristic.setProps({
           adminOnlyAccess: [Access.READ],
         });
 
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           value: 0,
         });
 
         connection.username = clientUsername1;
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
@@ -1555,9 +1595,11 @@ describe("Accessory", () => {
         accessory._accessoryInfo = undefined;
 
         await testRequestResponse({
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
@@ -1565,11 +1607,11 @@ describe("Accessory", () => {
     });
 
     describe("aid.iid format validation in handleHAPConnectionClosed (fix ec93c504)", () => {
-      test("should skip registered events without a dot separator", () => {
-        const clearMock = jest.fn();
+      it("should skip registered events without a dot separator", () => {
+        const clearMock = vi.fn();
         const mockConnection = {
-          getRegisteredEvents: jest.fn().mockReturnValue(new Set([
-            "malformed",         // no dot — without the fix this triggers parseInt(undefined)
+          getRegisteredEvents: vi.fn().mockReturnValue(new Set([
+            "malformed", // no dot — without the fix this triggers parseInt(undefined)
             `${aid}.${iids.on}`, // valid
           ])),
           clearRegisteredEvents: clearMock,
@@ -1580,10 +1622,10 @@ describe("Accessory", () => {
         expect(clearMock).toHaveBeenCalled();
       });
 
-      test("should skip empty registered event strings", () => {
+      it("should skip empty registered event strings", () => {
         const mockConnection = {
-          getRegisteredEvents: jest.fn().mockReturnValue(new Set(["", `${aid}.${iids.on}`])),
-          clearRegisteredEvents: jest.fn(),
+          getRegisteredEvents: vi.fn().mockReturnValue(new Set(["", `${aid}.${iids.on}`])),
+          clearRegisteredEvents: vi.fn(),
         } as unknown as HAPConnection;
 
         // @ts-expect-error: private access
@@ -1592,15 +1634,15 @@ describe("Accessory", () => {
     });
 
     describe("non-null assertions in accessory lookups (fix 03b49f9f)", () => {
-      test("slow read / timeout warning should not crash for unknown aid.iid in request", async () => {
-        jest.useFakeTimers({ doNotFake: ["nextTick", "queueMicrotask"] });
+      it("slow read / timeout warning should not crash for unknown aid.iid in request", async () => {
+        vi.useFakeTimers();
 
         try {
           // @ts-expect-error: private access
           accessory.handleGetCharacteristics(connection, {
             ids: [
               { aid: 999, iid: 999 }, // unknown accessory — exercises `!accessory`
-              { aid: aid, iid: 9999 }, // known accessory, unknown iid — exercises `!characteristic`
+              { aid, iid: 9999 }, // known accessory, unknown iid — exercises `!characteristic`
             ],
             includeMeta: false,
             includeEvent: false,
@@ -1610,48 +1652,48 @@ describe("Accessory", () => {
 
           // 3s slow read warning fires; without the fix this would throw on
           // `accessory!.getCharacteristicByIID(...)` or `characteristic!.displayName`.
-          jest.advanceTimersByTime(3000);
+          vi.advanceTimersByTime(3000);
           // 6s later the timeout warning fires and the response is emitted.
-          jest.advanceTimersByTime(6000);
+          vi.advanceTimersByTime(6000);
 
           await callbackPromise;
           expect(callback).toHaveBeenCalledTimes(1);
           // unknown ids are skipped, so the response has no characteristics
           expect(callback.mock.calls[0][1].characteristics).toEqual([]);
         } finally {
-          jest.useRealTimers();
+          vi.useRealTimers();
         }
       });
 
-      test("slow write / timeout warning should not crash for unknown aid.iid in request", async () => {
-        jest.useFakeTimers({ doNotFake: ["nextTick", "queueMicrotask"] });
+      it("slow write / timeout warning should not crash for unknown aid.iid in request", async () => {
+        vi.useFakeTimers();
 
         try {
           // @ts-expect-error: private access
           accessory.handleSetCharacteristics(connection, {
             characteristics: [
               { aid: 999, iid: 999, value: true },
-              { aid: aid, iid: 9999, value: true },
+              { aid, iid: 9999, value: true },
             ],
           }, callback);
 
-          jest.advanceTimersByTime(3000);
-          jest.advanceTimersByTime(6000);
+          vi.advanceTimersByTime(3000);
+          vi.advanceTimersByTime(6000);
 
           await callbackPromise;
           expect(callback).toHaveBeenCalledTimes(1);
         } finally {
-          jest.useRealTimers();
+          vi.useRealTimers();
         }
       });
     });
 
     describe("handleSetCharacteristic", () => {
-      let consoleWarnSpy: jest.SpyInstance;
+      let consoleWarnSpy: MockInstance;
 
       beforeEach(() => {
         // Mock console.warn before each test that needs it
-        consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+        consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       });
 
       afterEach(() => {
@@ -1681,15 +1723,17 @@ describe("Accessory", () => {
         callback.mockReset();
       };
 
-      test("write Switch.On characteristic", async () => {
+      it("write Switch.On characteristic", async () => {
         await testRequestResponse({
-          characteristics: [{
-            aid: aid,
-            iid: iids.on,
-            value: true,
-          }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: true,
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1702,20 +1746,22 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          characteristics: [{
-            aid: aid,
-            iid: iids.on,
-            value: true,
-          }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: true,
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.RESOURCE_BUSY,
         });
       });
 
-      test.each([true, false])(
-        "write-response characteristic with requesting r: %s", async rValue => {
+      it.each([true, false])(
+        "write-response characteristic with requesting r: %s", async (rValue) => {
           onCharacteristic.props.perms.push(Perms.WRITE_RESPONSE);
 
           onCharacteristic.on(CharacteristicEventTypes.SET, (value, callback) => {
@@ -1724,32 +1770,48 @@ describe("Accessory", () => {
           });
 
           await testRequestResponse({
-            characteristics: [{ aid: aid, iid: iids.on, value: false, r: rValue }],
+            characteristics: [
+              {
+                aid,
+                iid: iids.on,
+                value: false,
+                r: rValue,
+              },
+            ],
           }, {
-            aid: aid,
+            aid,
             iid: iids.on,
             status: HAPStatus.SUCCESS,
             value: rValue ? 1 : undefined,
           });
         });
 
-      test("requesting write-response on non-write-response characteristic", async () => {
+      it("requesting write-response on non-write-response characteristic", async () => {
         onCharacteristic.onSet(() => {
           return true; // write response
         });
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: false, r: true }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: false,
+              r: true,
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
       });
 
-      test("write non-existent characteristic", async () => {
+      it("write non-existent characteristic", async () => {
         await testRequestResponse({
-          characteristics: [{ aid: 2, iid: iids.on, value: true }],
+          characteristics: [
+            { aid: 2, iid: iids.on, value: true },
+          ],
         }, {
           aid: 2,
           iid: iids.on,
@@ -1757,42 +1819,50 @@ describe("Accessory", () => {
         });
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: 15, value: true }],
+          characteristics: [
+            { aid, iid: 15, value: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: 15,
           status: HAPStatus.INVALID_VALUE_IN_REQUEST,
         });
       });
 
-      test("writing read-only characteristic", async () => {
+      it("writing read-only characteristic", async () => {
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.model, value: "New Model" }],
+          characteristics: [
+            { aid, iid: iids.model, value: "New Model" },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.model,
           status: HAPStatus.READ_ONLY_CHARACTERISTIC,
         });
       });
 
-      test("writing adminOnly", async () => {
+      it("writing adminOnly", async () => {
         onCharacteristic.setProps({
           adminOnlyAccess: [Access.WRITE],
         });
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true }],
+          characteristics: [
+            { aid, iid: iids.on, value: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
 
         connection.username = clientUsername1; // changing to non-adming username
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true }],
+          characteristics: [
+            { aid, iid: iids.on, value: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
@@ -1801,25 +1871,29 @@ describe("Accessory", () => {
         accessory._accessoryInfo = undefined;
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true }],
+          characteristics: [
+            { aid, iid: iids.on, value: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
       });
 
-      test("enabling and disabling event notifications", async () => {
-        const hasEventNotificationsMock: Mock<boolean, [number, number]> = jest.fn();
+      it("enabling and disabling event notifications", async () => {
+        const hasEventNotificationsMock: Mock<(aid: number, iid: number) => boolean> = vi.fn();
         connection.hasEventNotifications = hasEventNotificationsMock;
-        connection.enableEventNotifications = jest.fn();
-        connection.disableEventNotifications = jest.fn();
+        connection.enableEventNotifications = vi.fn();
+        connection.disableEventNotifications = vi.fn();
 
         hasEventNotificationsMock.mockImplementationOnce(() => false);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: false }],
+          characteristics: [
+            { aid, iid: iids.on, ev: false },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1830,9 +1904,11 @@ describe("Accessory", () => {
 
         hasEventNotificationsMock.mockImplementationOnce(() => false);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: true }],
+          characteristics: [
+            { aid, iid: iids.on, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1842,9 +1918,11 @@ describe("Accessory", () => {
 
         hasEventNotificationsMock.mockImplementationOnce(() => true);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: true }],
+          characteristics: [
+            { aid, iid: iids.on, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1855,9 +1933,11 @@ describe("Accessory", () => {
 
         hasEventNotificationsMock.mockImplementationOnce(() => true);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: false }],
+          characteristics: [
+            { aid, iid: iids.on, ev: false },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1866,36 +1946,42 @@ describe("Accessory", () => {
         expect(onCharacteristic.subscriptions).toEqual(0);
       });
 
-      test("unsupported event notifications", async () => {
-        connection.hasEventNotifications = jest.fn(() => false);
+      it("unsupported event notifications", async () => {
+        connection.hasEventNotifications = vi.fn(() => false);
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.model, ev: true }],
+          characteristics: [
+            { aid, iid: iids.model, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.model,
           status: HAPStatus.NOTIFICATION_NOT_SUPPORTED,
         });
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.model, ev: false }],
+          characteristics: [
+            { aid, iid: iids.model, ev: false },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.model,
           status: HAPStatus.NOTIFICATION_NOT_SUPPORTED,
         });
       });
 
-      test("clearing event notifications on disconnect", async () => {
-        const hasEventNotificationsMock: Mock<boolean, [number, number]> = jest.fn();
+      it("clearing event notifications on disconnect", async () => {
+        const hasEventNotificationsMock: Mock<(aid: number, iid: number) => boolean> = vi.fn();
         connection.hasEventNotifications = hasEventNotificationsMock;
-        connection.enableEventNotifications = jest.fn();
+        connection.enableEventNotifications = vi.fn();
 
         hasEventNotificationsMock.mockImplementationOnce(() => false);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: true }],
+          characteristics: [
+            { aid, iid: iids.on, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1903,15 +1989,15 @@ describe("Accessory", () => {
         // @ts-expect-error: private access
         expect(onCharacteristic.subscriptions).toEqual(1);
 
-        connection.getRegisteredEvents = jest.fn(() => {
-          return new Set([aid + "." + iids.on]);
+        connection.getRegisteredEvents = vi.fn(() => {
+          return new Set([`${aid}.${iids.on}`]);
         });
-        connection.clearRegisteredEvents = jest.fn();
+        connection.clearRegisteredEvents = vi.fn();
 
         // @ts-expect-error: private access
         const originalImplementation = accessory.findCharacteristic.bind(accessory);
         // @ts-expect-error: private access
-        accessory.findCharacteristic = jest.fn((aid, iid) => {
+        accessory.findCharacteristic = vi.fn((aid, iid) => {
           return originalImplementation(aid, iid);
         });
 
@@ -1925,19 +2011,21 @@ describe("Accessory", () => {
         expect(onCharacteristic.subscriptions).toEqual(0);
       });
 
-      test("adminOnly notifications", async () => {
-        connection.hasEventNotifications = jest.fn(() => false);
-        connection.enableEventNotifications = jest.fn();
-        connection.disableEventNotifications = jest.fn();
+      it("adminOnly notifications", async () => {
+        connection.hasEventNotifications = vi.fn(() => false);
+        connection.enableEventNotifications = vi.fn();
+        connection.disableEventNotifications = vi.fn();
 
         onCharacteristic.setProps({
           adminOnlyAccess: [Access.NOTIFY],
         });
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: true }],
+          characteristics: [
+            { aid, iid: iids.on, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1945,18 +2033,21 @@ describe("Accessory", () => {
 
         connection.username = clientUsername1; // changing to non-admin username
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: true }],
+          characteristics: [
+            { aid, iid: iids.on, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
 
-
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: false }],
+          characteristics: [
+            { aid, iid: iids.on, ev: false },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
@@ -1965,22 +2056,31 @@ describe("Accessory", () => {
         accessory._accessoryInfo = undefined;
 
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, ev: true }],
+          characteristics: [
+            { aid, iid: iids.on, ev: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_PRIVILEGES,
         });
       });
 
-      test("write with additional authorization", async () => {
-        const handler: Mock<boolean, (string | undefined)[]> = jest.fn();
+      it("write with additional authorization", async () => {
+        const handler: Mock<(...args: (string | undefined)[]) => boolean> = vi.fn();
 
         // write with no handler
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true, authData: "xyz" }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: true,
+              authData: "xyz",
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -1990,9 +2090,16 @@ describe("Accessory", () => {
         // allowed to write
         handler.mockImplementationOnce(() => true);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true, authData: "xyz" }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: true,
+              authData: "xyz",
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.SUCCESS,
         });
@@ -2001,9 +2108,16 @@ describe("Accessory", () => {
         // rejected write
         handler.mockImplementationOnce(() => false);
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true, authData: "xyz" }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: true,
+              authData: "xyz",
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_AUTHORIZATION,
         });
@@ -2014,96 +2128,119 @@ describe("Accessory", () => {
           throw new Error("EXPECTED TEST ERROR");
         });
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on, value: true, authData: "xyz" }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: true,
+              authData: "xyz",
+            },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INSUFFICIENT_AUTHORIZATION,
         });
         expect(handler).toHaveBeenCalledWith("xyz");
       });
 
-      test.each([false, true])(
-        "timed write with timed write being required: %s", async timedWriteRequired => {
+      it.each([false, true])(
+        "timed write with timed write being required: %s", async (timedWriteRequired) => {
           if (timedWriteRequired) {
             onCharacteristic.props.perms.push(Perms.TIMED_WRITE);
 
             await testRequestResponse({
-              characteristics: [{ aid: aid, iid: iids.on, value: true }],
+              characteristics: [
+                { aid, iid: iids.on, value: true },
+              ],
             }, {
-              aid: aid,
+              aid,
               iid: iids.on,
               status: HAPStatus.INVALID_VALUE_IN_REQUEST,
             });
           }
 
           await testRequestResponse({
-            characteristics: [{ aid: aid, iid: iids.on, value: true }],
+            characteristics: [
+              { aid, iid: iids.on, value: true },
+            ],
             pid: 1337, // pid already expired
           }, {
-            aid: aid,
+            aid,
             iid: iids.on,
             status: HAPStatus.INVALID_VALUE_IN_REQUEST,
           });
 
           connection.timedWritePid = 1337;
           connection.timedWriteTimeout = setTimeout(() => {
-            fail(new Error("timed-write timeout was never cleared"));
+            expect.fail("timed-write timeout was never cleared");
           }, 1000);
 
           await testRequestResponse({
-            characteristics: [{ aid: aid, iid: iids.on, value: true }],
+            characteristics: [
+              { aid, iid: iids.on, value: true },
+            ],
             pid: 1336, // invalid pid
           }, {
-            aid: aid,
+            aid,
             iid: iids.on,
             status: HAPStatus.INVALID_VALUE_IN_REQUEST,
           });
 
           await testRequestResponse({
-            characteristics: [{ aid: aid, iid: iids.on, value: true }],
+            characteristics: [
+              { aid, iid: iids.on, value: true },
+            ],
             pid: 1337, // correct pid
           }, {
-            aid: aid,
+            aid,
             iid: iids.on,
             status: HAPStatus.SUCCESS,
           });
 
           await testRequestResponse({
-            characteristics: [{ aid: aid, iid: iids.on, value: true }],
+            characteristics: [
+              { aid, iid: iids.on, value: true },
+            ],
             pid: 1337, // can't reuse pid
           }, {
-            aid: aid,
+            aid,
             iid: iids.on,
             status: HAPStatus.INVALID_VALUE_IN_REQUEST,
           });
         });
 
-      test("empty write", async () => {
+      it("empty write", async () => {
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.on }],
+          characteristics: [
+            { aid, iid: iids.on },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.on,
           status: HAPStatus.INVALID_VALUE_IN_REQUEST,
         });
       });
 
-      test("Identify Write", async () => {
+      it("identify Write", async () => {
         // PAIRED IDENTIFY
         await testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.identify, value: true }],
+          characteristics: [
+            { aid, iid: iids.identify, value: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.identify,
           status: HAPStatus.SUCCESS,
         });
 
         const eventPromise: Promise<[boolean, IdentifyCallback]> = awaitEventOnce(accessory, AccessoryEventTypes.IDENTIFY);
         const response = testRequestResponse({
-          characteristics: [{ aid: aid, iid: iids.identify, value: true }],
+          characteristics: [
+            { aid, iid: iids.identify, value: true },
+          ],
         }, {
-          aid: aid,
+          aid,
           iid: iids.identify,
           status: HAPStatus.SUCCESS,
         });
@@ -2115,7 +2252,7 @@ describe("Accessory", () => {
         await response;
       });
 
-      test("an empty write is answered straight away", async () => {
+      it("an empty write is answered straight away", async () => {
         // @ts-expect-error: private access
         accessory.handleSetCharacteristics(connection, { characteristics: [] }, callback);
 
@@ -2127,10 +2264,10 @@ describe("Accessory", () => {
         expect(callback).toHaveBeenCalledWith(undefined, { characteristics: [] });
       });
 
-      test("identify Write with a plugin onSet handler calls it, identifies, and warns about nothing", async () => {
+      it("identify Write with a plugin onSet handler calls it, identifies, and warns about nothing", async () => {
         const warnings: string[] = [];
         accessory.on(AccessoryEventTypes.CHARACTERISTIC_WARNING, warning => warnings.push(warning.message));
-        const onSet = jest.fn();
+        const onSet = vi.fn();
         accessory.getService(Service.AccessoryInformation)!.getCharacteristic(Characteristic.Identify).onSet(onSet);
         accessory.on(AccessoryEventTypes.IDENTIFY, (paired: boolean, identified: IdentifyCallback) => identified());
 
@@ -2148,7 +2285,7 @@ describe("Accessory", () => {
         expect(warnings).toEqual([]);
       });
 
-      test("identify Write answers with the status the identify listener reports", async () => {
+      it("identify Write answers with the status the identify listener reports", async () => {
         accessory.on(AccessoryEventTypes.IDENTIFY, (paired: boolean, identified: IdentifyCallback) => {
           identified(new HapStatusError(HAPStatus.RESOURCE_BUSY));
         });
@@ -2164,7 +2301,7 @@ describe("Accessory", () => {
         });
       });
 
-      test("identify is not handled through a public set listener", () => {
+      it("identify is not handled through a public set listener", () => {
         const restored = Accessory.deserialize(Accessory.serialize(accessory));
 
         for (const target of [accessory, restored]) {
@@ -2173,8 +2310,8 @@ describe("Accessory", () => {
         }
       });
 
-      test("identify Write of false is answered without identifying", async () => {
-        const identify = jest.fn();
+      it("identify Write of false is answered without identifying", async () => {
+        const identify = vi.fn();
         accessory.on(AccessoryEventTypes.IDENTIFY, identify);
 
         // @ts-expect-error: private access
@@ -2200,6 +2337,7 @@ describe("Accessory", () => {
 
     describe("handleResource", () => {
       let cameraController: CameraController;
+
       beforeEach(() => {
         cameraController = new CameraController(createCameraControllerOptions());
         accessory.configureController(cameraController);
@@ -2215,10 +2353,9 @@ describe("Accessory", () => {
         }, callback);
 
         await callbackPromise;
-
       };
 
-      test("unknown resource type", () => {
+      it("unknown resource type", () => {
         // @ts-expect-error: private access
         accessory.handleResource({ "resource-type": "unknown" }, callback);
 
@@ -2228,7 +2365,7 @@ describe("Accessory", () => {
         });
       });
 
-      test("missing camera controller", () => {
+      it("missing camera controller", () => {
         accessory.removeController(cameraController);
 
         // @ts-expect-error: private access
@@ -2244,7 +2381,7 @@ describe("Accessory", () => {
         });
       });
 
-      test("retrieve image resource", async () => {
+      it("retrieve image resource", async () => {
         await testRequestResponse();
         expect(callback).toHaveBeenCalledWith(undefined, MOCK_IMAGE);
 
@@ -2252,7 +2389,7 @@ describe("Accessory", () => {
         expect(callback).toHaveBeenCalledWith(undefined, MOCK_IMAGE);
       });
 
-      test("retrieve image resource on bridge", async () => {
+      it("retrieve image resource on bridge", async () => {
         accessory.addBridgedAccessory(new Accessory("Bridged accessory", uuid.generate("bridged")));
         accessory._assignIDs(accessory._identifierCache!);
 
@@ -2263,7 +2400,7 @@ describe("Accessory", () => {
         expect(callback).toHaveBeenCalledWith(undefined, MOCK_IMAGE);
       });
 
-      test("retrieve image resource on bridged accessory", async () => {
+      it("retrieve image resource on bridged accessory", async () => {
         accessory.removeController(cameraController);
 
         const bridged = new Accessory("Bridged accessory", uuid.generate("bridged"));
@@ -2289,7 +2426,7 @@ describe("Accessory", () => {
         expect(callback).toHaveBeenCalledWith(undefined, MOCK_IMAGE);
       });
 
-      test("properly forward erroneous conditions", async () => {
+      it("properly forward erroneous conditions", async () => {
         cameraController.recordingManagement!.operatingModeService
           .getCharacteristic(Characteristic.HomeKitCameraActive)
           .value = false;
@@ -2305,7 +2442,7 @@ describe("Accessory", () => {
       // @ts-expect-error: private access
       const originalTimeoutAfterWarning = Accessory.TIMEOUT_AFTER_WARNING;
 
-      let characteristicWarningHandler: Mock<void, [Characteristic, CharacteristicWarningType, string]>;
+      let characteristicWarningHandler: Mock<(characteristic: Characteristic, type: CharacteristicWarningType, message: string) => void>;
 
       const adjustTimeouts = (warning: number, timeout: number) => {
         // @ts-expect-error: private access
@@ -2315,7 +2452,7 @@ describe("Accessory", () => {
       };
 
       beforeEach(() => {
-        characteristicWarningHandler = jest.fn();
+        characteristicWarningHandler = vi.fn();
         // @ts-expect-error: private access
         accessory.sendCharacteristicWarning = characteristicWarningHandler;
       });
@@ -2324,14 +2461,16 @@ describe("Accessory", () => {
         adjustTimeouts(originalWarning, originalTimeoutAfterWarning);
       });
 
-      test("slow read notification", async () => {
+      it("slow read notification", async () => {
         adjustTimeouts(60, 10000);
 
         const getEvent: Promise<[CharacteristicGetCallback]> = awaitEventOnce(onCharacteristic, CharacteristicEventTypes.GET);
 
         // @ts-expect-error: private access
         accessory.handleGetCharacteristics(connection, {
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
           includeMeta: false,
           includeEvent: false,
           includeType: false,
@@ -2350,22 +2489,26 @@ describe("Accessory", () => {
 
         await callbackPromise;
         expect(callback).toHaveBeenCalledWith(undefined, {
-          characteristics: [{
-            aid: aid,
-            iid: iids.on,
-            value: 1,
-          }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              value: 1,
+            },
+          ],
         });
       });
 
-      test("timeout read notification", async () => {
+      it("timeout read notification", async () => {
         adjustTimeouts(10, 50);
 
         const getEvent: Promise<[CharacteristicGetCallback]> = awaitEventOnce(onCharacteristic, CharacteristicEventTypes.GET);
 
         // @ts-expect-error: private access
         accessory.handleGetCharacteristics(connection, {
-          ids: [{ aid: aid, iid: iids.on }],
+          ids: [
+            { aid, iid: iids.on },
+          ],
           includeMeta: false,
           includeEvent: false,
           includeType: false,
@@ -2386,22 +2529,26 @@ describe("Accessory", () => {
 
         await callbackPromise;
         expect(callback).toHaveBeenCalledWith(undefined, {
-          characteristics: [{
-            aid: aid,
-            iid: iids.on,
-            status: HAPStatus.OPERATION_TIMED_OUT,
-          }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              status: HAPStatus.OPERATION_TIMED_OUT,
+            },
+          ],
         });
       });
 
-      test("slow write notification", async () => {
+      it("slow write notification", async () => {
         adjustTimeouts(60, 10000);
 
         const setEvent: Promise<[CharacteristicValue, CharacteristicSetCallback]> = awaitEventOnce(onCharacteristic, CharacteristicEventTypes.SET);
 
         // @ts-expect-error: private access
         accessory.handleSetCharacteristics(connection, {
-          characteristics: [{ aid: aid, iid: iids.on, value: true }],
+          characteristics: [
+            { aid, iid: iids.on, value: true },
+          ],
         }, callback);
 
         await PromiseTimeout(2);
@@ -2417,22 +2564,26 @@ describe("Accessory", () => {
 
         await callbackPromise;
         expect(callback).toHaveBeenCalledWith(undefined, {
-          characteristics: [{
-            aid: aid,
-            iid: iids.on,
-            status: HAPStatus.SUCCESS,
-          }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              status: HAPStatus.SUCCESS,
+            },
+          ],
         });
       });
 
-      test("timeout read notification", async () => {
+      it("timeout write notification", async () => {
         adjustTimeouts(10, 50);
 
         const setEvent: Promise<[CharacteristicValue, CharacteristicSetCallback]> = awaitEventOnce(onCharacteristic, CharacteristicEventTypes.SET);
 
         // @ts-expect-error: private access
         accessory.handleSetCharacteristics(connection, {
-          characteristics: [{ aid: aid, iid: iids.on, value: true }],
+          characteristics: [
+            { aid, iid: iids.on, value: true },
+          ],
         }, callback);
 
         await PromiseTimeout(2);
@@ -2450,22 +2601,24 @@ describe("Accessory", () => {
 
         await callbackPromise;
         expect(callback).toHaveBeenCalledWith(undefined, {
-          characteristics: [{
-            aid: aid,
-            iid: iids.on,
-            status: HAPStatus.OPERATION_TIMED_OUT,
-          }],
+          characteristics: [
+            {
+              aid,
+              iid: iids.on,
+              status: HAPStatus.OPERATION_TIMED_OUT,
+            },
+          ],
         });
       });
     });
   });
 
   describe("characteristicWarning", () => {
-    let consoleWarnSpy: jest.SpyInstance;
+    let consoleWarnSpy: MockInstance;
 
     beforeEach(() => {
       // Mock console.warn before each test that needs it
-      consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -2473,7 +2626,7 @@ describe("Accessory", () => {
       consoleWarnSpy.mockRestore();
     });
 
-    test("emit characteristic warning", () => {
+    it("emit characteristic warning", () => {
       accessory.on(AccessoryEventTypes.CHARACTERISTIC_WARNING, callback);
 
       const service = accessory.addService(Service.Lightbulb, "Light");
@@ -2483,7 +2636,7 @@ describe("Accessory", () => {
       expect(callback).toHaveBeenCalledTimes(1);
     });
 
-    test("forward characteristic on bridged accessory", () => {
+    it("forward characteristic on bridged accessory", () => {
       const bridge = new Bridge("Test bridge", uuid.generate("bridge test"));
 
       bridge.addBridgedAccessory(accessory);
@@ -2502,12 +2655,12 @@ describe("Accessory", () => {
       const service = accessory.addService(Service.Lightbulb, "Light");
       const on = service.getCharacteristic(Characteristic.On);
 
-      on.updateValue({});
+      expect(() => on.updateValue({})).not.toThrow();
     });
   });
 
   describe("serialize", () => {
-    test("serialize accessory", () => {
+    it("serialize accessory", () => {
       accessory.category = Categories.LIGHTBULB;
 
       const lightService = new Service.Lightbulb("TestLight", "subtype");
@@ -2525,17 +2678,19 @@ describe("Accessory", () => {
       expect(json.services).toBeDefined();
       expect(json.services.length).toEqual(3); // 2 above + accessory information service
       expect(json.linkedServices).toBeDefined();
-      expect(Object.keys(json.linkedServices!)).toEqual([lightService.UUID + "subtype"]);
-      expect(Object.values(json.linkedServices!)).toEqual([[switchService.UUID + "subtype"]]);
+      expect(Object.keys(json.linkedServices!)).toEqual([`${lightService.UUID}subtype`]);
+      expect(Object.values(json.linkedServices!)).toEqual([
+        [`${switchService.UUID}subtype`],
+      ]);
     });
   });
 
   describe("deserialize", () => {
-    let consoleWarnSpy: jest.SpyInstance;
+    let consoleWarnSpy: MockInstance;
 
     beforeEach(() => {
       // Mock console.warn before each test that needs it
-      consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -2543,33 +2698,33 @@ describe("Accessory", () => {
       consoleWarnSpy.mockRestore();
     });
 
-    test("deserialize legacy json from homebridge", () => {
-      const json = JSON.parse("{\"plugin\":\"homebridge-samplePlatform\",\"platform\":\"SamplePlatform\"," +
-          "\"displayName\":\"2020-01-17T18:45:41.049Z\",\"UUID\":\"dc3951d8-662e-46f7-b6fe-d1b5b5e1a995\",\"category\":1," +
-          "\"context\":{},\"linkedServices\":{\"0000003E-0000-1000-8000-0026BB765291\":[],\"00000043-0000-1000-8000-0026BB765291\":[]}," +
-          "\"services\":[{\"UUID\":\"0000003E-0000-1000-8000-0026BB765291\",\"characteristics\":[" +
-          "{\"displayName\":\"Identify\",\"UUID\":\"00000014-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pw\"]}," +
-          "\"value\":false,\"eventOnlyCharacteristic\":false},{\"displayName\":\"Manufacturer\",\"UUID\":\"00000020-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"Default-Manufacturer\",\"eventOnlyCharacteristic\":false},{\"displayName\":\"Model\"," +
-          "\"UUID\":\"00000021-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"Default-Model\",\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null," +
-          "\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"2020-01-17T18:45:41.049Z\"," +
-          "\"eventOnlyCharacteristic\":false},{\"displayName\":\"Serial Number\",\"UUID\":\"00000030-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"Default-SerialNumber\",\"eventOnlyCharacteristic\":false},{\"displayName\":\"Firmware Revision\"," +
-          "\"UUID\":\"00000052-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"\",\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Product Data\",\"UUID\":\"00000220-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"data\"," +
-          "\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":null," +
-          "\"eventOnlyCharacteristic\":false}]},{\"displayName\":\"Test Light\",\"UUID\":\"00000043-0000-1000-8000-0026BB765291\"," +
-          "\"characteristics\":[{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"Test Light\",\"eventOnlyCharacteristic\":false},{\"displayName\":\"On\"," +
-          "\"UUID\":\"00000025-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":false,\"eventOnlyCharacteristic\":false}]}]}");
+    it("deserialize legacy json from homebridge", () => {
+      const json = JSON.parse("{\"plugin\":\"homebridge-samplePlatform\",\"platform\":\"SamplePlatform\","
+        + "\"displayName\":\"2020-01-17T18:45:41.049Z\",\"UUID\":\"dc3951d8-662e-46f7-b6fe-d1b5b5e1a995\",\"category\":1,"
+        + "\"context\":{},\"linkedServices\":{\"0000003E-0000-1000-8000-0026BB765291\":[],\"00000043-0000-1000-8000-0026BB765291\":[]},"
+        + "\"services\":[{\"UUID\":\"0000003E-0000-1000-8000-0026BB765291\",\"characteristics\":["
+        + "{\"displayName\":\"Identify\",\"UUID\":\"00000014-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pw\"]},"
+        + "\"value\":false,\"eventOnlyCharacteristic\":false},{\"displayName\":\"Manufacturer\",\"UUID\":\"00000020-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"Default-Manufacturer\",\"eventOnlyCharacteristic\":false},{\"displayName\":\"Model\","
+        + "\"UUID\":\"00000021-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"Default-Model\",\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,"
+        + "\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"2020-01-17T18:45:41.049Z\","
+        + "\"eventOnlyCharacteristic\":false},{\"displayName\":\"Serial Number\",\"UUID\":\"00000030-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"Default-SerialNumber\",\"eventOnlyCharacteristic\":false},{\"displayName\":\"Firmware Revision\","
+        + "\"UUID\":\"00000052-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"\",\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Product Data\",\"UUID\":\"00000220-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"data\","
+        + "\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":null,"
+        + "\"eventOnlyCharacteristic\":false}]},{\"displayName\":\"Test Light\",\"UUID\":\"00000043-0000-1000-8000-0026BB765291\","
+        + "\"characteristics\":[{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"Test Light\",\"eventOnlyCharacteristic\":false},{\"displayName\":\"On\","
+        + "\"UUID\":\"00000025-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":false,\"eventOnlyCharacteristic\":false}]}]}");
 
       const accessory = Accessory.deserialize(json);
 
@@ -2581,7 +2736,7 @@ describe("Accessory", () => {
       expect(accessory.services.length).toEqual(2);
     });
 
-    test("a restored accessory keeps a single primary service", () => {
+    it("a restored accessory keeps a single primary service", () => {
       const accessory = new Accessory("Primary", uuid.generate("deserialize-primary"));
       accessory.addService(Service.Switch, "Alpha", "a").setPrimaryService();
       accessory.addService(Service.Switch, "Beta", "b");
@@ -2597,7 +2752,7 @@ describe("Accessory", () => {
       expect(beta.isPrimaryService).toBeTruthy();
     });
 
-    test("a restored accessory with two primary services keeps only the first", () => {
+    it("a restored accessory with two primary services keeps only the first", () => {
       const accessory = new Accessory("Primary", uuid.generate("deserialize-two-primaries"));
       accessory.addService(Service.Switch, "Alpha", "a");
       accessory.addService(Service.Switch, "Beta", "b");
@@ -2610,70 +2765,70 @@ describe("Accessory", () => {
       ]);
     });
 
-    test("deserialize complete json", () => {
+    it("deserialize complete json", () => {
       // json for a light accessory
-      const json = JSON.parse("{\"displayName\":\"TestAccessory\",\"UUID\":\"0beec7b5-ea3f-40fd-bc95-d0dd47f3c5bc\"," +
-          "\"category\":5,\"services\":[{\"UUID\":\"0000003E-0000-1000-8000-0026BB765291\",\"hiddenService\":false," +
-          "\"primaryService\":false,\"characteristics\":[{\"displayName\":\"Identify\",\"UUID\":\"00000014-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pw\"]}," +
-          "\"value\":false,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Manufacturer\",\"UUID\":\"00000020-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"Default-Manufacturer\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Model\",\"UUID\":\"00000021-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"Default-Model\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"TestAccessory\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Serial Number\",\"UUID\":\"00000030-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\"," +
-          "\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"Default-SerialNumber\"," +
-          "\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},{\"displayName\":\"Firmware Revision\"," +
-          "\"UUID\":\"00000052-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"1.0\",\"accessRestrictedToAdmins\":[]," +
-          "\"eventOnlyCharacteristic\":false},{\"displayName\":\"Product Data\"," +
-          "\"UUID\":\"00000220-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"data\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":null,\"accessRestrictedToAdmins\":[]," +
-          "\"eventOnlyCharacteristic\":false}],\"optionalCharacteristics\":[{\"displayName\":\"Hardware Revision\"," +
-          "\"UUID\":\"00000053-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"\",\"accessRestrictedToAdmins\":[]," +
-          "\"eventOnlyCharacteristic\":false},{\"displayName\":\"Accessory Flags\",\"UUID\":\"000000A6-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"uint32\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\",\"ev\"]}," +
-          "\"value\":0,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]}," +
-          "{\"displayName\":\"TestLight\",\"UUID\":\"00000043-0000-1000-8000-0026BB765291\"," +
-          "\"subtype\":\"subtype\",\"hiddenService\":false,\"primaryService\":false," +
-          "\"characteristics\":[{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"TestLight\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"On\",\"UUID\":\"00000025-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\",\"pw\",\"ev\"]}," +
-          "\"value\":false,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]," +
-          "\"optionalCharacteristics\":[{\"displayName\":\"Brightness\",\"UUID\":\"00000008-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"int\",\"unit\":\"percentage\",\"minValue\":0,\"maxValue\":100,\"minStep\":1," +
-          "\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":0,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Hue\",\"UUID\":\"00000013-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"float\",\"unit\":\"arcdegrees\",\"minValue\":0,\"maxValue\":360,\"minStep\":1,\"perms\":[\"pr\",\"pw\",\"ev\"]}," +
-          "\"value\":0,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Saturation\",\"UUID\":\"0000002F-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"float\"," +
-          "\"unit\":\"percentage\",\"minValue\":0,\"maxValue\":100,\"minStep\":1,\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":0," +
-          "\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},{\"displayName\":\"Name\"," +
-          "\"UUID\":\"00000023-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null," +
-          "\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"\"," +
-          "\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}," +
-          "{\"displayName\":\"Color Temperature\",\"UUID\":\"000000CE-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"uint32\",\"unit\":null,\"minValue\":140,\"maxValue\":500,\"minStep\":1,\"perms\":[\"pr\",\"pw\",\"ev\"]}," +
-          "\"value\":140,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]}," +
-          "{\"displayName\":\"TestSwitch\",\"UUID\":\"00000049-0000-1000-8000-0026BB765291\",\"subtype\":\"subtype\"," +
-          "\"hiddenService\":false,\"primaryService\":false,\"characteristics\":[{\"displayName\":\"Name\"," +
-          "\"UUID\":\"00000023-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null," +
-          "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"TestSwitch\",\"accessRestrictedToAdmins\":[]," +
-          "\"eventOnlyCharacteristic\":false},{\"displayName\":\"On\",\"UUID\":\"00000025-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null," +
-          "\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":false,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]," +
-          "\"optionalCharacteristics\":[{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\"," +
-          "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]}," +
-          "\"value\":\"\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]}]," +
-          "\"linkedServices\":{\"00000043-0000-1000-8000-0026BB765291subtype\":[\"00000049-0000-1000-8000-0026BB765291subtype\"]}}");
+      const json = JSON.parse("{\"displayName\":\"TestAccessory\",\"UUID\":\"0beec7b5-ea3f-40fd-bc95-d0dd47f3c5bc\","
+        + "\"category\":5,\"services\":[{\"UUID\":\"0000003E-0000-1000-8000-0026BB765291\",\"hiddenService\":false,"
+        + "\"primaryService\":false,\"characteristics\":[{\"displayName\":\"Identify\",\"UUID\":\"00000014-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pw\"]},"
+        + "\"value\":false,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Manufacturer\",\"UUID\":\"00000020-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"Default-Manufacturer\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Model\",\"UUID\":\"00000021-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"Default-Model\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"TestAccessory\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Serial Number\",\"UUID\":\"00000030-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\","
+        + "\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"Default-SerialNumber\","
+        + "\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},{\"displayName\":\"Firmware Revision\","
+        + "\"UUID\":\"00000052-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"1.0\",\"accessRestrictedToAdmins\":[],"
+        + "\"eventOnlyCharacteristic\":false},{\"displayName\":\"Product Data\","
+        + "\"UUID\":\"00000220-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"data\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":null,\"accessRestrictedToAdmins\":[],"
+        + "\"eventOnlyCharacteristic\":false}],\"optionalCharacteristics\":[{\"displayName\":\"Hardware Revision\","
+        + "\"UUID\":\"00000053-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"\",\"accessRestrictedToAdmins\":[],"
+        + "\"eventOnlyCharacteristic\":false},{\"displayName\":\"Accessory Flags\",\"UUID\":\"000000A6-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"uint32\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\",\"ev\"]},"
+        + "\"value\":0,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]},"
+        + "{\"displayName\":\"TestLight\",\"UUID\":\"00000043-0000-1000-8000-0026BB765291\","
+        + "\"subtype\":\"subtype\",\"hiddenService\":false,\"primaryService\":false,"
+        + "\"characteristics\":[{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"TestLight\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"On\",\"UUID\":\"00000025-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\",\"pw\",\"ev\"]},"
+        + "\"value\":false,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}],"
+        + "\"optionalCharacteristics\":[{\"displayName\":\"Brightness\",\"UUID\":\"00000008-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"int\",\"unit\":\"percentage\",\"minValue\":0,\"maxValue\":100,\"minStep\":1,"
+        + "\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":0,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Hue\",\"UUID\":\"00000013-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"float\",\"unit\":\"arcdegrees\",\"minValue\":0,\"maxValue\":360,\"minStep\":1,\"perms\":[\"pr\",\"pw\",\"ev\"]},"
+        + "\"value\":0,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Saturation\",\"UUID\":\"0000002F-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"float\","
+        + "\"unit\":\"percentage\",\"minValue\":0,\"maxValue\":100,\"minStep\":1,\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":0,"
+        + "\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},{\"displayName\":\"Name\","
+        + "\"UUID\":\"00000023-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,"
+        + "\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"\","
+        + "\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false},"
+        + "{\"displayName\":\"Color Temperature\",\"UUID\":\"000000CE-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"uint32\",\"unit\":null,\"minValue\":140,\"maxValue\":500,\"minStep\":1,\"perms\":[\"pr\",\"pw\",\"ev\"]},"
+        + "\"value\":140,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]},"
+        + "{\"displayName\":\"TestSwitch\",\"UUID\":\"00000049-0000-1000-8000-0026BB765291\",\"subtype\":\"subtype\","
+        + "\"hiddenService\":false,\"primaryService\":false,\"characteristics\":[{\"displayName\":\"Name\","
+        + "\"UUID\":\"00000023-0000-1000-8000-0026BB765291\",\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,"
+        + "\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},\"value\":\"TestSwitch\",\"accessRestrictedToAdmins\":[],"
+        + "\"eventOnlyCharacteristic\":false},{\"displayName\":\"On\",\"UUID\":\"00000025-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"bool\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,"
+        + "\"perms\":[\"pr\",\"pw\",\"ev\"]},\"value\":false,\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}],"
+        + "\"optionalCharacteristics\":[{\"displayName\":\"Name\",\"UUID\":\"00000023-0000-1000-8000-0026BB765291\","
+        + "\"props\":{\"format\":\"string\",\"unit\":null,\"minValue\":null,\"maxValue\":null,\"minStep\":null,\"perms\":[\"pr\"]},"
+        + "\"value\":\"\",\"accessRestrictedToAdmins\":[],\"eventOnlyCharacteristic\":false}]}],"
+        + "\"linkedServices\":{\"00000043-0000-1000-8000-0026BB765291subtype\":[\"00000049-0000-1000-8000-0026BB765291subtype\"]}}");
 
       const accessory = Accessory.deserialize(json);
 
@@ -2697,34 +2852,34 @@ describe("Accessory", () => {
     };
 
     const callParseBindOption = (bind: (InterfaceName | IPAddress) | (InterfaceName | IPAddress)[]): {
-      advertiserAddress?: string[],
-      serviceRestrictedAddress?: string[],
-      serviceDisableIpv6?: boolean,
-      serverAddress?: string,
+      advertiserAddress?: string[]
+      serviceRestrictedAddress?: string[]
+      serviceDisableIpv6?: boolean
+      serverAddress?: string
     } => {
       const info: PublishInfo = {
         ...basePublishInfo,
-        bind: bind,
+        bind,
       };
 
       // @ts-expect-error: private access
       return Accessory.parseBindOption(info);
     };
 
-    test("parse unspecified ipv6 address", () => {
+    it("parse unspecified ipv6 address", () => {
       expect(callParseBindOption("::")).toEqual({
         serverAddress: "::",
       });
     });
 
-    test("parse unspecified ipv4 address", () => {
+    it("parse unspecified ipv4 address", () => {
       expect(callParseBindOption("0.0.0.0")).toEqual({
         serverAddress: "0.0.0.0",
         serviceDisableIpv6: true,
       });
     });
 
-    test("parse interface names", () => {
+    it("parse interface names", () => {
       expect(callParseBindOption(["en0", "lo0"])).toEqual({
         serverAddress: "::",
         advertiserAddress: ["en0", "lo0"],
@@ -2732,7 +2887,7 @@ describe("Accessory", () => {
       });
     });
 
-    test("parse interface names with explicit ipv6 support", () => {
+    it("parse interface names with explicit ipv6 support", () => {
       expect(callParseBindOption(["en0", "lo0", "::"])).toEqual({
         serverAddress: "::",
         advertiserAddress: ["en0", "lo0"],
@@ -2740,7 +2895,7 @@ describe("Accessory", () => {
       });
     });
 
-    test("parse interface names ipv4 only", () => {
+    it("parse interface names ipv4 only", () => {
       expect(callParseBindOption(["en0", "lo0", "0.0.0.0"])).toEqual({
         serverAddress: "0.0.0.0",
         advertiserAddress: ["en0", "lo0"],
@@ -2749,7 +2904,7 @@ describe("Accessory", () => {
       });
     });
 
-    test("parse ipv4 address", () => {
+    it("parse ipv4 address", () => {
       expect(callParseBindOption("169.254.104.90")).toEqual({
         serverAddress: "0.0.0.0",
         advertiserAddress: ["169.254.104.90"],
@@ -2763,7 +2918,7 @@ describe("Accessory", () => {
       });
     });
 
-    test("parse ipv6 address", () => {
+    it("parse ipv6 address", () => {
       expect(callParseBindOption("2001:db8::")).toEqual({
         serverAddress: "::",
         advertiserAddress: ["2001:db8::"],

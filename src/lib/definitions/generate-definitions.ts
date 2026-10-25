@@ -766,6 +766,7 @@ function writeCharacteristicTestFile(): void {
 
   const testOutput = fs.createWriteStream(path.resolve(__dirname, "./CharacteristicDefinitions.spec.ts"), { encoding: "utf8" });
   testOutput.write("// THIS FILE IS AUTO-GENERATED - DO NOT MODIFY\n");
+  testOutput.write("import { describe, it } from \"vitest\";\n");
   testOutput.write("import \"./\";\n\n");
   testOutput.write("import { Characteristic } from \"../Characteristic\";\n\n");
   testOutput.write("describe(\"CharacteristicDefinitions\", () => {");
@@ -795,6 +796,7 @@ function writeServicesTestFile(): void {
 
   const testOutput = fs.createWriteStream(path.resolve(__dirname, "./ServiceDefinitions.spec.ts"), { encoding: "utf8" });
   testOutput.write("// THIS FILE IS AUTO-GENERATED - DO NOT MODIFY\n");
+  testOutput.write("import { describe, expect, it } from \"vitest\";\n");
   testOutput.write("import \"./\";\n\n");
   testOutput.write("import { Characteristic } from \"../Characteristic\";\n");
   testOutput.write("import { Service } from \"../Service\";\n\n");

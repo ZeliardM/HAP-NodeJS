@@ -18,10 +18,12 @@
     "generate-definitions": "ts-node src/lib/definitions/generate-definitions.ts",
     "prepublishOnly": "npm run build",
     "postpublish": "npm run clean",
-    "test": "jest",
-    "test-coverage": "jest --coverage",
+    "test": "vitest run",
+    "test-coverage": "npm run test -- --coverage",
     "docs": "typedoc",
-    "lint-docs": "typedoc --emit none"
+    "lint-docs": "typedoc --emit none",
+    "typecheck": "tsc -p tsconfig.spec.json",
+    "pretest": "npm run typecheck"
   },
   "keywords": [
     "hap-nodejs",
@@ -66,28 +68,25 @@
     "@eslint/js": "^10.0.1",
     "@types/debug": "^4.1.13",
     "@types/escape-html": "^1.0.4",
-    "@types/jest": "^30.0.0",
     "@types/node": "^26.6.5",
     "@types/plist": "^3.0.5",
     "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.72.0",
+    "@vitest/coverage-v8": "^5.0.5",
     "commander": "^15.0.0",
     "escape-html": "^1.0.3",
     "eslint": "^10.13.0",
     "http-parser-js": "^0.5.10",
-    "jest": "^30.5.2",
     "rimraf": "^6.1.3",
     "semver": "^7.8.5",
     "simple-plist": "^1.4.0",
-    "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
     "tweetnacl": "^1.0.3",
     "typedoc": "^0.28.20",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
   },
   "allowScripts": {
-    "@parcel/watcher": false,
-    "fsevents": true,
-    "unrs-resolver": true
+    "fsevents": true
   }
 }

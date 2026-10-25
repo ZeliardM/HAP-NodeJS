@@ -1,3 +1,4 @@
+import { describe, expect, test } from "vitest";
 import { EventTriggerOption } from "../camera";
 import { createCameraControllerOptions } from "./CameraController.spec";
 import { DoorbellController } from "./DoorbellController";

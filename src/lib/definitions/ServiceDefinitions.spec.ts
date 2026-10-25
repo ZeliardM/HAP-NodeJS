@@ -1,4 +1,5 @@
 // THIS FILE IS AUTO-GENERATED - DO NOT MODIFY
+import { describe, expect, it } from "vitest";
 import "./";
 
 import { Characteristic } from "../Characteristic";

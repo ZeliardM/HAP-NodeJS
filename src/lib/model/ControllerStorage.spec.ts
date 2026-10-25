@@ -1,3 +1,5 @@
+import { describe, expect, it, vi } from "vitest";
+
 import { Accessory } from "../Accessory";
 import { Bridge } from "../Bridge";
 import { ControllerIdentifier, ControllerServiceMap, SerializableController, StateChangeDelegate } from "../controller";
@@ -6,8 +8,8 @@ import { ControllerStorage } from "./ControllerStorage";
 import { HAPStorage } from "./HAPStorage";
 
 interface State {
-  first?: string;
-  second?: string;
+  first?: string
+  second?: string
 }
 
 // restores its state in two steps and reports a state change in between, like a controller whose
@@ -71,15 +73,22 @@ class UnreadableController extends SteppedController {
   }
 }
 
-describe("ControllerStorage", () => {
-  test("state changes reported while restoring do not overwrite the stored data", () => {
+describe("controllerStorage", () => {
+  it("state changes reported while restoring do not overwrite the stored data", () => {
     const accessory = new Accessory("Test", uuid.generate("controller-storage"));
     const storage = new ControllerStorage(accessory);
     const controller = new SteppedController();
     storage.trackController(controller);
 
     // @ts-expect-error: private access
-    storage.init([{ type: "stepped", controllerData: { data: { first: "a", second: "b" } } }]);
+    storage.init([
+      {
+        type: "stepped",
+        controllerData: {
+          data: { first: "a", second: "b" },
+        },
+      },
+    ]);
 
     expect(controller.state).toEqual({ first: "a", second: "b" });
     // @ts-expect-error: private access
@@ -94,15 +103,22 @@ describe("ControllerStorage", () => {
     clearTimeout(storage.queuedSaveTimeout);
   });
 
-  test("the reset after unreadable stored data is saved", () => {
+  it("the reset after unreadable stored data is saved", () => {
     const accessory = new Accessory("Test", uuid.generate("controller-storage-reset"));
     const storage = new ControllerStorage(accessory);
     const controller = new UnreadableController();
     storage.trackController(controller);
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
     // @ts-expect-error: private access
-    storage.init([{ type: "unreadable", controllerData: { data: { first: "a", second: "b" } } }]);
+    storage.init([
+      {
+        type: "unreadable",
+        controllerData: {
+          data: { first: "a", second: "b" },
+        },
+      },
+    ]);
 
     expect(warn).toHaveBeenCalledTimes(1);
     // @ts-expect-error: private access
@@ -126,7 +142,7 @@ describe("ControllerStorage", () => {
       },
     });
 
-    test("unlinks its storage from the bridge", () => {
+    it("unlinks its storage from the bridge", () => {
       const bridge = new Bridge("Bridge", uuid.generate("controller-storage-unlink-bridge"));
       const accessory = new Accessory("Child", uuid.generate("controller-storage-unlink-child"));
       bridge.addBridgedAccessory(accessory);
@@ -138,7 +154,7 @@ describe("ControllerStorage", () => {
       expect(accessory.controllerStorage.parent).toBeUndefined();
     });
 
-    test("a state change on the removed accessory does not schedule a save it cannot do", () => {
+    it("a state change on the removed accessory does not schedule a save it cannot do", () => {
       const bridge = new Bridge("Bridge", uuid.generate("controller-storage-orphan-bridge"));
       bridge.controllerStorage.load("AA:BB:CC:00:00:04");
       const accessory = new Accessory("Child", uuid.generate("controller-storage-orphan-child"));
@@ -155,7 +171,7 @@ describe("ControllerStorage", () => {
       expect(accessory.controllerStorage.queuedSaveTimeout).toBeUndefined();
     });
 
-    test("the same accessory can be bridged again after the bridge was published", () => {
+    it("the same accessory can be bridged again after the bridge was published", () => {
       const bridge = new Bridge("Bridge", uuid.generate("controller-storage-readd-bridge"));
       bridge.controllerStorage.load("AA:BB:CC:00:00:01");
       const accessory = new Accessory("Child", uuid.generate("controller-storage-readd-child"));
@@ -169,7 +185,7 @@ describe("ControllerStorage", () => {
       clearTimeout(bridge.controllerStorage.queuedSaveTimeout);
     });
 
-    test("the same accessory bridged again before the bridge was published does not break loading", () => {
+    it("the same accessory bridged again before the bridge was published does not break loading", () => {
       const bridge = new Bridge("Bridge", uuid.generate("controller-storage-readd-early-bridge"));
       const accessory = new Accessory("Child", uuid.generate("controller-storage-readd-early-child"));
       bridge.addBridgedAccessory(accessory);
@@ -179,7 +195,7 @@ describe("ControllerStorage", () => {
       expect(() => bridge.controllerStorage.load("AA:BB:CC:00:00:02")).not.toThrow();
     });
 
-    test("a replacement with the same UUID restores the stored controller data", () => {
+    it("a replacement with the same UUID restores the stored controller data", () => {
       const username = "AA:BB:CC:00:00:03";
       const accessoryUUID = uuid.generate("controller-storage-replace-child");
       storedData(username, accessoryUUID);
@@ -199,7 +215,7 @@ describe("ControllerStorage", () => {
     });
   });
 
-  test("controller data cleared on an accessory bridged after publish is not saved again", () => {
+  it("controller data cleared on an accessory bridged after publish is not saved again", () => {
     const username = "AA:BB:CC:00:00:05";
     const accessoryUUID = uuid.generate("controller-storage-restored-child");
     HAPStorage.storage().setItemSync(ControllerStorage.persistKey(username), {

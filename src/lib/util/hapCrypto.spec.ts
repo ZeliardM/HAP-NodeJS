@@ -1,7 +1,11 @@
+import { Buffer } from "node:buffer";
+import crypto from "node:crypto";
+
+import tweetnacl from "tweetnacl";
+import { beforeEach, describe, expect, it } from "vitest";
+
 import { HAPEncryption } from "./eventedhttp";
 import * as hapCrypto from "./hapCrypto";
-import crypto from "crypto";
-import tweetnacl from "tweetnacl";
 
 function fromHex(hex: string): Buffer {
   return Buffer.from(hex.trim().replace(/ /g, ""), "hex");
@@ -16,21 +20,21 @@ describe("hapCrypto", () => {
   describe("chacha20-poly1305", () => {
     const key = fromHex("09b29329 4514f14e e8437501 674e268f 7d85b193 85d38b54 8f5be259 c678fb52");
     const input = fromHex(
-      "48545450 2f312e31 20323030 204f4b0d 0a436f6e 74656e74 2d547970 653a2061 70706c69 636174696f6e2f68 61702b6a" +
-      "736f6e0d 0a446174 653a2053 756e2c20 31392041 70722032 30323020 31363a32 323a3238 20474d54 0d0a436f 6e6e6563" +
-      "74696f6e 3a206b65 65702d61 6c697665 0d0a5472 616e7366 65722d45 6e636f64 696e673a 20636875 6e6b6564 0d0a0d0a" +
-      "33350d0a 7b226368 61726163 74657269 73746963 73223a5b 7b226169 64223a31 2c226969 64223a39 2c227661 6c756522" +
-      "3a66616c 73657d5d 7d0d0a30 0d0a0d0a",
+      "48545450 2f312e31 20323030 204f4b0d 0a436f6e 74656e74 2d547970 653a2061 70706c69 636174696f6e2f68 61702b6a"
+      + "736f6e0d 0a446174 653a2053 756e2c20 31392041 70722032 30323020 31363a32 323a3238 20474d54 0d0a436f 6e6e6563"
+      + "74696f6e 3a206b65 65702d61 6c697665 0d0a5472 616e7366 65722d45 6e636f64 696e673a 20636875 6e6b6564 0d0a0d0a"
+      + "33350d0a 7b226368 61726163 74657269 73746963 73223a5b 7b226169 64223a31 2c226969 64223a39 2c227661 6c756522"
+      + "3a66616c 73657d5d 7d0d0a30 0d0a0d0a",
     );
     const nonce = fromHex("08000000 00000000");
     const aad = fromHex("d000");
     const tag = fromHex("8e4c1272 16827838 8a155757 d34a851a");
     const output = fromHex(
-      "6e62d95a 0811739b f21f4135 00da6a77 a5eb013f d9fe70ce 1c7a4c95 c06eee64 7ffe2dd6 ab58bce8 6d911959 4a11defa" +
-      "e4162a4e 9d3240ca 36956854 e6150377 b54e4ac9 f98d7607 4331ac06 54e0abaa 76006d43 aecb3638 60952e58 3708ca26" +
-      "959bccf9 4bb255de 31286989 faf82ec6 99cf7abe dc4c3544 210b1e35 4d323a72 ed197d1b e584a1d6 42931ced e20376d8" +
-      "31bb3eea 7d3b307c 432d5b10 9b30b1cf 3e0bba23 712695a6 9e6e66b9 7db4ac45 3c49c6de 2c5b3139 ca5c9fef 07bf805d" +
-      "8cc99047 ad94b0cf 33eac227 b1211074",
+      "6e62d95a 0811739b f21f4135 00da6a77 a5eb013f d9fe70ce 1c7a4c95 c06eee64 7ffe2dd6 ab58bce8 6d911959 4a11defa"
+      + "e4162a4e 9d3240ca 36956854 e6150377 b54e4ac9 f98d7607 4331ac06 54e0abaa 76006d43 aecb3638 60952e58 3708ca26"
+      + "959bccf9 4bb255de 31286989 faf82ec6 99cf7abe dc4c3544 210b1e35 4d323a72 ed197d1b e584a1d6 42931ced e20376d8"
+      + "31bb3eea 7d3b307c 432d5b10 9b30b1cf 3e0bba23 712695a6 9e6e66b9 7db4ac45 3c49c6de 2c5b3139 ca5c9fef 07bf805d"
+      + "8cc99047 ad94b0cf 33eac227 b1211074",
     );
 
     it("should encrypt chacha20-poly1305 correctly", () => {
@@ -53,7 +57,7 @@ describe("hapCrypto", () => {
     });
   });
 
-  describe("HKDF", () => {
+  describe("hKDF", () => {
     it("should calculate test vector correctly", () => {
       const ikm = fromHex("0b0b0b0b 0b0b0b0b 0b0b0b0b 0b0b0b0b 0b0b0b0b 0b0b");
       const salt = fromHex("00010203 04050607 08090a0b 0c");
@@ -96,14 +100,14 @@ describe("hapCrypto", () => {
       clientEncryption.controllerToAccessoryKey = accessoryToControllerKey;
     });
 
-    test("simple encryption and decryption", () => {
+    it("simple encryption and decryption", () => {
       const encrypted = hapCrypto.layerEncrypt(message0, serverEncryption);
 
       const decrypted = hapCrypto.layerDecrypt(encrypted, clientEncryption);
       expect(decrypted).toEqual(message0);
     });
 
-    test("multiple frames encryption and decryption", () => {
+    it("multiple frames encryption and decryption", () => {
       const encrypted0 = hapCrypto.layerEncrypt(message0, serverEncryption);
       const encrypted1 = hapCrypto.layerEncrypt(message1, serverEncryption);
       const encrypted2 = hapCrypto.layerEncrypt(message2, serverEncryption);
@@ -112,7 +116,7 @@ describe("hapCrypto", () => {
       expect(decrypted).toEqual(Buffer.concat([message0, message1, message2]));
     });
 
-    test("multiple frames encryption and decryption intertwined", () => {
+    it("multiple frames encryption and decryption intertwined", () => {
       const S_encrypted0 = hapCrypto.layerEncrypt(message0, serverEncryption);
       const S_encrypted1 = hapCrypto.layerEncrypt(message1, serverEncryption);
       const S_encrypted2 = hapCrypto.layerEncrypt(message2, serverEncryption);
@@ -127,7 +131,7 @@ describe("hapCrypto", () => {
       expect(C_decrypted).toEqual(Buffer.concat([message1, message3]));
     });
 
-    test("large message encryption and decryption (multi-chunk)", () => {
+    it("large message encryption and decryption (multi-chunk)", () => {
       // Message larger than 0x400 (1024) bytes forces multiple chunks
       const largeMessage = crypto.randomBytes(3000);
       const encrypted = hapCrypto.layerEncrypt(largeMessage, serverEncryption);
@@ -135,7 +139,7 @@ describe("hapCrypto", () => {
       expect(decrypted).toEqual(largeMessage);
     });
 
-    test("incomplete frames decryption; first", () => {
+    it("incomplete frames decryption; first", () => {
       const S_encrypted0 = hapCrypto.layerEncrypt(message0, serverEncryption);
       const S_encrypted1 = hapCrypto.layerEncrypt(message1, serverEncryption);
       const S_encrypted2 = hapCrypto.layerEncrypt(message2, serverEncryption);
@@ -146,25 +150,34 @@ describe("hapCrypto", () => {
       expect(hapCrypto.layerDecrypt(C_encrypted0.subarray(0, 5), serverEncryption)).toEqual(Buffer.alloc(0));
 
       const S_decrypted0 = hapCrypto.layerDecrypt(
-        Buffer.concat([S_encrypted0, S_encrypted1.subarray(0, 5)]),
+        Buffer.concat([
+          S_encrypted0,
+          S_encrypted1.subarray(0, 5),
+        ]),
         clientEncryption,
       );
       expect(S_decrypted0).toEqual(message0);
 
       const C_decrypted = hapCrypto.layerDecrypt(
-        Buffer.concat([C_encrypted0.subarray(5), C_encrypted1]),
+        Buffer.concat([
+          C_encrypted0.subarray(5),
+          C_encrypted1,
+        ]),
         serverEncryption,
       );
       expect(C_decrypted).toEqual(Buffer.concat([message2, message3]));
 
       const S_decrypted1 = hapCrypto.layerDecrypt(
-        Buffer.concat([S_encrypted1.subarray(5), S_encrypted2]),
+        Buffer.concat([
+          S_encrypted1.subarray(5),
+          S_encrypted2,
+        ]),
         clientEncryption,
       );
       expect(S_decrypted1).toEqual(Buffer.concat([message1, message2]));
     });
 
-    test("incomplete frames decryption; split within the length header", () => {
+    it("incomplete frames decryption; split within the length header", () => {
       const encrypted = Buffer.concat([
         hapCrypto.layerEncrypt(message0, serverEncryption),
         hapCrypto.layerEncrypt(message1, serverEncryption),

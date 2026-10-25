@@ -1,7 +1,11 @@
-import { EventEmitter } from "events";
-import { IncomingMessage, ServerResponse } from "http";
-import net, { AddressInfo } from "net";
-import os from "os";
+import { Buffer } from "node:buffer";
+import { EventEmitter } from "node:events";
+import { IncomingMessage, ServerResponse } from "node:http";
+import net, { AddressInfo } from "node:net";
+import os from "node:os";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { HAPHTTPClient } from "../../test-utils/HAPHTTPClient";
 import { HAPHTTPCode } from "../HAPServer";
 import { EventedHTTPServer, EventedHTTPServerEvent, HAPConnection, HAPConnectionEvent } from "./eventedhttp";
@@ -13,7 +17,7 @@ describe("eventedhttp", () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const defaultRequestHandler = (connection: any, request: any, response: ServerResponse) => {
-    response.writeHead(HAPHTTPCode.OK,  { "Content-Type": "plain/text" });
+    response.writeHead(HAPHTTPCode.OK, { "Content-Type": "plain/text" });
     response.end("Hello World", "ascii");
   };
 
@@ -22,7 +26,11 @@ describe("eventedhttp", () => {
   // destination, so we dial the loopback address of the bound family instead.
   const connectClient = async (): Promise<HAPHTTPClient> => {
     const address = server.address();
-    const host = ["0.0.0.0", "::"].includes(address.address) ? ((address.family === "IPv6") ? "::1" : "127.0.0.1") : address.address;
+    const host = ["0.0.0.0", "::"].includes(address.address)
+      ? ((address.family === "IPv6")
+        ? "::1"
+        : "127.0.0.1")
+      : address.address;
     const client = new HAPHTTPClient(host, address.port);
     await client.connect();
     clients.push(client);
@@ -48,14 +56,14 @@ describe("eventedhttp", () => {
     server.destroy();
   });
 
-  test("simple http request", async () => {
+  it("simple http request", async () => {
     const connectionOpened: Promise<HAPConnection> = awaitEventOnce(server, EventedHTTPServerEvent.CONNECTION_OPENED);
     const connectionClosed: Promise<HAPConnection> = awaitEventOnce(server, EventedHTTPServerEvent.CONNECTION_CLOSED);
 
     server.on(EventedHTTPServerEvent.REQUEST, (connection, request, response) => {
       expect(request.method).toBe("GET");
       expect(request.url!.endsWith("/test?query=true")).toBeTruthy();
-      response.writeHead(HAPHTTPCode.OK,  { "Content-Type": "plain/text" });
+      response.writeHead(HAPHTTPCode.OK, { "Content-Type": "plain/text" });
       response.end("Hello World", "ascii");
     });
 
@@ -79,7 +87,7 @@ describe("eventedhttp", () => {
     await connectionClosed;
   });
 
-  test("ensure connection handling respects nature of unpair", async () => {
+  it("ensure connection handling respects nature of unpair", async () => {
     // evented http server records the username of every authenticated HAPConnection.
     // For the same Apple ID (username) there might be multiple connections (iDevices, hubs, etc).
     // Once an unpair request happens, all other connections need to be torn down while the connection
@@ -138,7 +146,7 @@ describe("eventedhttp", () => {
     await client0.waitForClose();
   });
 
-  test("event notifications", async () => {
+  it("event notifications", async () => {
     server.once(EventedHTTPServerEvent.REQUEST, defaultRequestHandler);
 
     const connectionOpened: Promise<HAPConnection> = awaitEventOnce(server, EventedHTTPServerEvent.CONNECTION_OPENED);
@@ -157,7 +165,6 @@ describe("eventedhttp", () => {
     expect(connection.hasEventNotifications(0, 0)).toBeFalsy();
     expect(connection.getRegisteredEvents()).toEqual(new Set(["1.1"]));
 
-
     connection.sendEvent(1, 1, "Hello World!");
     connection.sendEvent(1, 1, "Hello World!"); // won't be sent (duplicate)
     connection.sendEvent(1, 1, "Hello Mars!");
@@ -172,16 +179,15 @@ describe("eventedhttp", () => {
     // rather than a fixed delay so the assertion holds regardless of how the runtime schedules the round-trip.
     await client.waitForData(1);
     expect(client.receiveBufferCount).toBe(1);
-    expect(client.popReceiveBuffer().toString()).toBe("EVENT/1.0 200 OK\r\n" +
-      "Content-Type: application/hap+json\r\n" +
-      "Content-Length: 143\r\n" +
-      "\r\n" +
-      "{\"characteristics\":[" +
-      "{\"aid\":1,\"iid\":1,\"value\":\"Hello World!\"}" +
-      ",{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"}," +
-      "{\"aid\":1,\"iid\":1,\"value\":\"Hello World!\"}" +
-      "]}");
-
+    expect(client.popReceiveBuffer().toString()).toBe("EVENT/1.0 200 OK\r\n"
+      + "Content-Type: application/hap+json\r\n"
+      + "Content-Length: 143\r\n"
+      + "\r\n"
+      + "{\"characteristics\":["
+      + "{\"aid\":1,\"iid\":1,\"value\":\"Hello World!\"}"
+      + ",{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"},"
+      + "{\"aid\":1,\"iid\":1,\"value\":\"Hello World!\"}"
+      + "]}");
 
     server.broadcastEvent(1, 1, "Hello Sun!", undefined, false);
     // An event flagged for immediate delivery flushes the currently queued events along with it. The wait is bounded well
@@ -190,12 +196,11 @@ describe("eventedhttp", () => {
     connection.sendEvent(1, 1, "Hello Mars!", true);
     await client.waitForData(1, HAPConnection.EVENT_COALESCING_DELAY / 2);
     expect(client.receiveBufferCount).toBe(1);
-    expect(client.popReceiveBuffer().toString()).toBe("EVENT/1.0 200 OK\r\n" +
-      "Content-Type: application/hap+json\r\n" +
-      "Content-Length: 100\r\n" +
-      "\r\n" +
-      "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"},{\"aid\":1,\"iid\":1,\"value\":\"Hello Sun!\"}]}");
-
+    expect(client.popReceiveBuffer().toString()).toBe("EVENT/1.0 200 OK\r\n"
+      + "Content-Type: application/hap+json\r\n"
+      + "Content-Length: 100\r\n"
+      + "\r\n"
+      + "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"},{\"aid\":1,\"iid\":1,\"value\":\"Hello Sun!\"}]}");
 
     // The originating connection is excluded from its own broadcast, so it must receive nothing. Exclusion is decided
     // synchronously when the broadcast is dispatched, so a brief settle is enough to confirm non-delivery.
@@ -230,11 +235,11 @@ describe("eventedhttp", () => {
         // bounded well below the coalescing window so an event that wrongly arrives on the coalescing timer fails loudly.
         const received = await client.readUntil("EVENT/1.0", HAPConnection.EVENT_COALESCING_DELAY / 2);
         const event = received.substring(received.indexOf("EVENT")); // splicing away the http response!
-        expect(event).toBe("EVENT/1.0 200 OK\r\n" +
-          "Content-Type: application/hap+json\r\n" +
-          "Content-Length: 102\r\n" +
-          "\r\n" +
-          "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"},{\"aid\":1,\"iid\":1,\"value\":\"Hello World!\"}]}");
+        expect(event).toBe("EVENT/1.0 200 OK\r\n"
+          + "Content-Type: application/hap+json\r\n"
+          + "Content-Length: 102\r\n"
+          + "\r\n"
+          + "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"},{\"aid\":1,\"iid\":1,\"value\":\"Hello World!\"}]}");
       },
     );
 
@@ -255,11 +260,11 @@ describe("eventedhttp", () => {
 
         // After the coalescing window the batched event is flushed as its own notification.
         await client.waitForData(1);
-        expect(client.popReceiveBuffer().toString()).toBe("EVENT/1.0 200 OK\r\n" +
-          "Content-Type: application/hap+json\r\n" +
-          "Content-Length: 100\r\n" +
-          "\r\n" +
-          "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Sun!\"},{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"}]}");
+        expect(client.popReceiveBuffer().toString()).toBe("EVENT/1.0 200 OK\r\n"
+          + "Content-Type: application/hap+json\r\n"
+          + "Content-Length: 100\r\n"
+          + "\r\n"
+          + "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Sun!\"},{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"}]}");
       },
     );
 
@@ -274,18 +279,18 @@ describe("eventedhttp", () => {
         // Response and coalesced event flush together and may or may not share a TCP segment, so read until the marker.
         const received = await client.readUntil("EVENT/1.0");
         const event = received.substring(received.indexOf("EVENT")); // splicing away the http response!
-        expect(event).toBe("EVENT/1.0 200 OK\r\n" +
-          "Content-Type: application/hap+json\r\n" +
-          "Content-Length: 61\r\n" +
-          "\r\n" +
-          "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"}]}");
+        expect(event).toBe("EVENT/1.0 200 OK\r\n"
+          + "Content-Type: application/hap+json\r\n"
+          + "Content-Length: 61\r\n"
+          + "\r\n"
+          + "{\"characteristics\":[{\"aid\":1,\"iid\":1,\"value\":\"Hello Mars!\"}]}");
       },
     );
   });
 
   // TODO test events not delivered while in a request!
 
-  test("should not send an empty event notification when every queued event was unregistered", async () => {
+  it("should not send an empty event notification when every queued event was unregistered", async () => {
     server.once(EventedHTTPServerEvent.REQUEST, defaultRequestHandler);
     const connectionOpened: Promise<HAPConnection> = awaitEventOnce(server, EventedHTTPServerEvent.CONNECTION_OPENED);
     const client = await connectClient();
@@ -300,7 +305,7 @@ describe("eventedhttp", () => {
     expect(client.receiveBufferCount).toBe(0);
   });
 
-  test("should not write an event into the middle of a response larger than 64 KiB", async () => {
+  it("should not write an event into the middle of a response larger than 64 KiB", async () => {
     const body = "x".repeat(300_000);
     server.once(EventedHTTPServerEvent.REQUEST, (connection: HAPConnection, request: IncomingMessage, response: ServerResponse) => {
       connection.enableEventNotifications(1, 1);
@@ -322,14 +327,14 @@ describe("eventedhttp", () => {
 
   describe("internal HTTP server", () => {
     // a local process connecting to the internal loopback port must not be able to send requests as this connection
-    test("should reject a socket which is not the proxy socket", async () => {
+    it("should reject a socket which is not the proxy socket", async () => {
       server.once(EventedHTTPServerEvent.REQUEST, defaultRequestHandler);
       const connectionOpened: Promise<HAPConnection> = awaitEventOnce(server, EventedHTTPServerEvent.CONNECTION_OPENED);
       const client = await connectClient();
       const connection = await connectionOpened;
       expect((await client.writeHTTPRequest("GET", "/")).statusCode).toBe(HAPHTTPCode.OK);
 
-      const requestHandler = jest.fn(defaultRequestHandler);
+      const requestHandler = vi.fn(defaultRequestHandler);
       server.on(EventedHTTPServerEvent.REQUEST, requestHandler);
 
       // @ts-expect-error: private access
@@ -355,22 +360,22 @@ describe("eventedhttp", () => {
       expect(requestHandler).toHaveBeenCalledTimes(1);
     });
 
-    test("should reject a request from a socket which connected before the proxy socket was known", async () => {
+    it("should reject a request from a socket which connected before the proxy socket was known", async () => {
       server.once(EventedHTTPServerEvent.REQUEST, defaultRequestHandler);
       const connectionOpened: Promise<HAPConnection> = awaitEventOnce(server, EventedHTTPServerEvent.CONNECTION_OPENED);
       const client = await connectClient();
       const connection = await connectionOpened;
       expect((await client.writeHTTPRequest("GET", "/")).statusCode).toBe(HAPHTTPCode.OK);
 
-      const requestHandler = jest.fn();
+      const requestHandler = vi.fn();
       server.on(EventedHTTPServerEvent.REQUEST, requestHandler);
 
       // such a socket got past the connection check, so it is only caught once it sends a request
       const foreignSocket = {
         remoteAddress: "127.0.0.1",
         remotePort: 1,
-        setNoDelay: jest.fn(),
-        destroy: jest.fn(),
+        setNoDelay: vi.fn(),
+        destroy: vi.fn(),
       };
       // @ts-expect-error: private access
       connection.handleHttpServerRequest({ socket: foreignSocket, url: "/accessories" }, {});
@@ -379,18 +384,18 @@ describe("eventedhttp", () => {
       expect(requestHandler).not.toHaveBeenCalled();
     });
 
-    test("should listen on the IPv4 loopback address when no loopback interface was detected", async () => {
-      // the setup file already loaded this module graph, so a fresh copy is loaded with net-utils mocked
-      let FreshEventedHTTPServer!: typeof EventedHTTPServer;
-      jest.isolateModules(() => {
-        jest.doMock("./net-utils", () => ({
-          ...jest.requireActual("./net-utils"),
+    it("should listen on the IPv4 loopback address when no loopback interface was detected", async () => {
+      // the setup file already loaded this module graph, so a fresh copy is imported with net-utils mocked
+      vi.resetModules();
+      vi.doMock("./net-utils.js", async (importOriginal) => {
+        const original = await importOriginal<typeof import("./net-utils.js")>();
+        return {
+          ...original,
           getOSLoopbackAddressIfAvailable: () => undefined,
-        }));
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        FreshEventedHTTPServer = require("./eventedhttp").EventedHTTPServer;
+        };
       });
 
+      const { EventedHTTPServer: FreshEventedHTTPServer } = await import("./eventedhttp.js");
       const freshServer = new FreshEventedHTTPServer();
       try {
         freshServer.listen(0, "127.0.0.1");
@@ -410,16 +415,17 @@ describe("eventedhttp", () => {
       } finally {
         freshServer.stop();
         freshServer.destroy();
-        jest.dontMock("./net-utils");
+        vi.doUnmock("./net-utils.js");
+        vi.resetModules();
       }
     });
   });
 });
 
-describe(EventedHTTPServer, () => {
+describe("eventedHTTPServer", () => {
   describe("idle connection timeout", () => {
     it("should schedule the next check for the connection which becomes idle first", () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       const server = new EventedHTTPServer();
       try {
         // @ts-expect-error: private access
@@ -433,31 +439,31 @@ describe(EventedHTTPServer, () => {
             lastSocketOperation: i === 0
               ? now - hour + 60_000
               : now,
-            close: jest.fn(),
+            close: vi.fn(),
           });
         }
 
-        const setTimeoutSpy = jest.spyOn(global, "setTimeout");
+        const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
         // @ts-expect-error: private access
         server.scheduleNextConnectionIdleTimeout();
         expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 60_000);
       } finally {
         // @ts-expect-error: private access
         clearTimeout(server.connectionIdleTimeout);
-        jest.useRealTimers();
-        jest.restoreAllMocks();
+        vi.useRealTimers();
+        vi.restoreAllMocks();
       }
     });
   });
 });
 
-describe(HAPConnection, () => {
+describe("hAPConnection", () => {
   describe("listener registration debugging", () => {
     it.each(["off", "removeListener"] as const)("%s() should report the listener count from before the removal", (method) => {
       const connection = Object.create(HAPConnection.prototype) as HAPConnection;
       EventEmitter.call(connection);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const debugListenerRegistration = jest.spyOn(connection as any, "debugListenerRegistration").mockImplementation(() => undefined);
+      const debugListenerRegistration = vi.spyOn(connection as any, "debugListenerRegistration").mockImplementation(() => undefined);
 
       const listener = (): void => undefined;
       connection.on(HAPConnectionEvent.CLOSED, listener);
@@ -470,12 +476,19 @@ describe(HAPConnection, () => {
   describe("getLocalNetworkInterface", () => {
     it("should warn only once about a local address it cannot match to an interface", () => {
       // Node.js leaves out an interface that is up but has no link, like an unused docker0 bridge (#1131)
-      const networkInterfaces = jest.spyOn(os, "networkInterfaces").mockReturnValue({
-        eth0: [{
-          address: "192.168.1.5", netmask: "255.255.255.0", family: "IPv4", mac: "00:00:00:00:00:00", internal: false, cidr: "192.168.1.5/24",
-        }],
+      const networkInterfaces = vi.spyOn(os, "networkInterfaces").mockReturnValue({
+        eth0: [
+          {
+            address: "192.168.1.5",
+            netmask: "255.255.255.0",
+            family: "IPv4",
+            mac: "00:00:00:00:00:00",
+            internal: false,
+            cidr: "192.168.1.5/24",
+          },
+        ],
       });
-      const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
+      const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
 
       try {
         const socket = { localAddress: "::ffff:172.17.0.1", remoteAddress: "::ffff:192.168.1.5", remotePort: 51612 };

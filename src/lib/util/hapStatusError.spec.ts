@@ -1,9 +1,10 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HAPStatus } from "../HAPServer";
 import { HapStatusError } from "./hapStatusError";
 
 describe("HapStatusError", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it("sets the hap status code correctly", async () => {

@@ -1,8 +1,9 @@
+import { describe, expect, it, vi } from "vitest";
 import { once } from "./once";
 
 describe("#once()", () => {
   it("should call a function once", () => {
-    const spy = jest.fn();
+    const spy = vi.fn();
     const callback = once(spy);
     callback();
 
@@ -10,7 +11,7 @@ describe("#once()", () => {
   });
 
   it("should throw an error if a function is called more than once", () => {
-    const spy = jest.fn();
+    const spy = vi.fn();
     const callback = once(spy);
     callback();
 

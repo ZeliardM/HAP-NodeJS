@@ -1,3 +1,4 @@
+import { describe, expect, test } from "vitest";
 import { Characteristic } from "../Characteristic";
 import { MockDelegate, mockRecordingOptions } from "../controller/CameraController.spec";
 import {

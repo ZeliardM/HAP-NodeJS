@@ -61,6 +61,7 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 - fix(server): log the listener count from before the removal in HAPConnection.off()
 - fix(accessory): compare a pairing's public key byte for byte instead of as text
 - refactor: load the service and characteristic definitions without an import cycle
+- test: migrate from jest to vitest
 
 ### Homebridge Dependencies
 

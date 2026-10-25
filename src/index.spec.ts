@@ -1,3 +1,4 @@
+import { describe, expect, test } from "vitest";
 // we just test that we can import index e.g. without any cyclic imports
 import "./index";
 

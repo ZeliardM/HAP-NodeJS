@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -211,7 +212,7 @@ describe(HAPFileStorage, () => {
     });
 
     it("should write the temporary file beside its target, as renaming across directories is not atomic", () => {
-      const renameSync = jest.spyOn(fs, "renameSync");
+      const renameSync = vi.spyOn(fs, "renameSync");
       try {
         storage.setItemSync("key.json", { a: 1 });
 
@@ -312,7 +313,7 @@ describe(HAPFileStorage, () => {
       storage.setItemSync("key.json", { a: 1 });
       fs.rmSync(path.join(dir, "key.json")); // the racing process got there first
 
-      const existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true);
+      const existsSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
       try {
         expect(() => storage.removeItemSync("key.json")).not.toThrow();
       } finally {

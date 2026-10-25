@@ -1,3 +1,4 @@
+import { expect } from "vitest";
 import { SRP, SrpClient } from "fast-srp-hap";
 import tweetnacl from "tweetnacl";
 import { HAPMimeTypes, PairingStates, PairMethods, TLVValues } from "../internal-types";

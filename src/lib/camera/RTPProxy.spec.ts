@@ -1,6 +1,8 @@
+import { afterEach, describe, expect, it } from "vitest";
+
 import RTPProxy from "./RTPProxy";
 
-describe("RTPProxy", () => {
+describe("rTPProxy", () => {
   let proxy: RTPProxy | undefined;
 
   afterEach(() => {

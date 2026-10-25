@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { CharacteristicProps, Formats, Perms } from "../Characteristic";
 import { formatOutgoingCharacteristicValue } from "./request-util";
 

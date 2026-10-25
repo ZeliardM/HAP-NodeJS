@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from "vitest";
 import { AccessoryInfo } from "./AccessoryInfo";
 import { Categories } from "../Accessory";
 import { HAPStorage } from "./HAPStorage";

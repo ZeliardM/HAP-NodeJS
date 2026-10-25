@@ -1,14 +1,15 @@
+import { vi } from "vitest";
 class Advertisement {
-  updateTxt = jest.fn();
-  stop = jest.fn();
-  destroy = jest.fn();
+  updateTxt = vi.fn();
+  stop = vi.fn();
+  destroy = vi.fn();
 }
 
 class BonjourService {
-  publish = jest.fn(() => {
+  publish = vi.fn(() => {
     return new Advertisement();
   });
-  destroy = jest.fn();
+  destroy = vi.fn();
 }
 
 export default (opts: any) => {

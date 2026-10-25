@@ -1,4 +1,7 @@
-import { EventEmitter } from "events";
+import { Buffer } from "node:buffer";
+import { EventEmitter } from "node:events";
+
+import { describe, expect, it, vi } from "vitest";
 
 import { Characteristic } from "../Characteristic";
 import { HAPConnectionEvent } from "../util/eventedhttp";
@@ -184,7 +187,7 @@ describe("remoteController", () => {
 
   describe("buttons", () => {
     it("should not throw from the release timer when the remote was set inactive in the meantime", async () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       try {
         const controller = createController();
         await writeTargetControl(controller, Operation.ADD, targetTLV(1, "Living Room", [
@@ -199,17 +202,17 @@ describe("remoteController", () => {
         connection.emit(HAPConnectionEvent.CLOSED);
         expect(controller.isActive()).toBeFalsy();
 
-        expect(() => jest.advanceTimersByTime(200)).not.toThrow();
+        expect(() => vi.advanceTimersByTime(200)).not.toThrow();
       } finally {
-        jest.useRealTimers();
+        vi.useRealTimers();
       }
     });
   });
 
   describe("siri audio session", () => {
     it("should stop the audio producer when the controller refuses the stream", async () => {
-      const startAudioProduction = jest.fn();
-      const stopAudioProduction = jest.fn();
+      const startAudioProduction = vi.fn();
+      const stopAudioProduction = vi.fn();
       class Producer {
         startAudioProduction = startAudioProduction;
         stopAudioProduction = stopAudioProduction;
@@ -217,8 +220,8 @@ describe("remoteController", () => {
 
       const connection = Object.assign(new EventEmitter(), {
         // the controller answers the dataSend open request with a non-zero status
-        sendRequest: jest.fn((_protocol, _topic, _message, callback) => setTimeout(callback, 0, undefined, 1, {})),
-        sendEvent: jest.fn(),
+        sendRequest: vi.fn((_protocol, _topic, _message, callback) => setTimeout(callback, 0, undefined, 1, {})),
+        sendEvent: vi.fn(),
       });
       const configuration = {
         codecType: 3,

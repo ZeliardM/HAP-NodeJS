@@ -1,3 +1,7 @@
+import { Buffer } from "node:buffer";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { Characteristic } from "../Characteristic";
 import { HAPStatus } from "../HAPServer";
 import { Service } from "../Service";
@@ -89,11 +93,11 @@ async function writeTransitionControl(lightbulb: Service, value: string): Promis
 
 describe("adaptiveLightingController", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it("should stay active when the curve is renewed with a shorter curve", async () => {
@@ -101,7 +105,7 @@ describe("adaptiveLightingController", () => {
     const start = Date.now();
 
     await writeTransitionControl(lightbulb, buildUpdateTransition(lightbulb, start, curve(10)));
-    jest.setSystemTime(start + 8.5 * HOUR);
+    vi.setSystemTime(start + 8.5 * HOUR);
     expect(controller.getCurrentAdaptiveLightingTransitionPoint()).toBeDefined();
 
     // the home hub renews the schedule with a curve which starts now
@@ -115,7 +119,7 @@ describe("adaptiveLightingController", () => {
   describe("control point errors", () => {
     it("should reject a read for another characteristic without disabling adaptive lighting", async () => {
       const { lightbulb, controller } = createController();
-      const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
         await writeTransitionControl(lightbulb, buildUpdateTransition(lightbulb, Date.now(), curve(5)));
 
@@ -132,7 +136,7 @@ describe("adaptiveLightingController", () => {
 
     it("should name the light in the warning and keep the raw value out of it", async () => {
       const { lightbulb } = createController();
-      const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
         // an update request which is missing everything but the characteristic iid and the transition flag
         const iid = lightbulb.getCharacteristic(Characteristic.ColorTemperature).iid!;
@@ -184,19 +188,19 @@ describe("adaptiveLightingController", () => {
       await writeTransitionControl(lightbulb, buildUpdateTransition(lightbulb, Date.now(), curve(5)));
 
       lightbulb.getCharacteristic(Characteristic.Brightness).value = Number.NaN;
-      expect(() => jest.advanceTimersByTime(60000)).not.toThrow();
+      expect(() => vi.advanceTimersByTime(60000)).not.toThrow();
       expect(controller.isAdaptiveLightingActive()).toBeTruthy();
 
       // the update loop keeps running once the brightness is a number again
       lightbulb.getCharacteristic(Characteristic.Brightness).value = 100;
-      jest.advanceTimersByTime(60000);
+      vi.advanceTimersByTime(60000);
       expect(lightbulb.getCharacteristic(Characteristic.ColorTemperature).value).toBe(150);
       controller.disableAdaptiveLighting();
     });
 
     it("should not schedule updates more often than once per second", async () => {
       const { lightbulb, controller } = createController();
-      const setTimeoutSpy = jest.spyOn(globalThis, "setTimeout");
+      const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
       try {
         await writeTransitionControl(lightbulb, buildUpdateTransition(lightbulb, Date.now(), curve(5), 0));
 

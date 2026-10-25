@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { IdentifierCache } from "./IdentifierCache";
 import { HAPStorage } from "./HAPStorage";
 

@@ -1,31 +1,29 @@
-import {
-  CameraController,
-  CameraControllerOptions,
-  CameraRecordingDelegate,
-  CameraStreamingDelegate,
-  PrepareStreamCallback,
-  SnapshotRequestCallback,
-  StreamRequestCallback,
-} from "../controller";
+import type { MockInstance } from "vitest";
+
+import { Buffer } from "node:buffer";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
   AudioBitrate,
   AudioRecordingCodecType,
   AudioRecordingSamplerate,
   AudioStreamingCodecType,
   AudioStreamingSamplerate,
-  CameraRecordingConfiguration,
   CameraRecordingOptions,
   H264Level,
   H264Profile,
   MediaContainerType,
-  PrepareStreamRequest,
   RecordingPacket,
-  SnapshotRequest,
-  StreamingRequest,
   VideoCodecType,
 } from "../camera";
-import { HDSProtocolSpecificErrorReason } from "../datastream";
-import "../definitions";
+import {
+  CameraController,
+  CameraControllerOptions,
+  CameraRecordingDelegate,
+  CameraStreamingDelegate,
+  PrepareStreamCallback,
+} from "../controller";
 import { HAPStatus } from "../HAPServer";
 import { HAPConnection } from "../util/eventedhttp";
 import * as tlv from "../util/tlv";
@@ -33,29 +31,33 @@ import * as uuid from "../util/uuid";
 import RTPProxy from "./RTPProxy";
 import { CameraStreamingOptions, RTPStreamManagement, SRTPCryptoSuites } from "./RTPStreamManagement";
 
+import "../definitions";
+
 class MockDelegate implements CameraStreamingDelegate, CameraRecordingDelegate {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  handleSnapshotRequest(request: SnapshotRequest, callback: SnapshotRequestCallback): void {
-    throw Error("Unsupported!");
+  handleSnapshotRequest(): void {
+    throw new Error("Unsupported!");
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  handleStreamRequest(request: StreamingRequest, callback: StreamRequestCallback): void {
-    throw Error("Unsupported!");
+
+  handleStreamRequest(): void {
+    throw new Error("Unsupported!");
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  prepareStream(request: PrepareStreamRequest, callback: PrepareStreamCallback): void {
-    throw Error("Unsupported!");
+
+  prepareStream(): void {
+    throw new Error("Unsupported!");
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async *handleRecordingStreamRequest(streamId: number): AsyncGenerator<RecordingPacket> {
-    yield { data: Buffer.alloc(64, 0), isLast: true };
+
+  async* handleRecordingStreamRequest(): AsyncGenerator<RecordingPacket> {
+    yield {
+      data: Buffer.alloc(64, 0),
+      isLast: true,
+    };
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  closeRecordingStream(streamId: number, reason: HDSProtocolSpecificErrorReason): void {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  updateRecordingActive(active: boolean): void {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  updateRecordingConfiguration(configuration: CameraRecordingConfiguration | undefined): void {}
+
+  closeRecordingStream(): void {}
+
+  updateRecordingActive(): void {}
+
+  updateRecordingConfiguration(): void {}
 }
 
 const baseStreamingOptions: CameraStreamingOptions = {
@@ -73,31 +75,37 @@ const baseStreamingOptions: CameraStreamingOptions = {
   },
   audio: {
     twoWayAudio: true,
-    codecs: [{
-      type: AudioStreamingCodecType.AAC_ELD,
-      samplerate: AudioStreamingSamplerate.KHZ_24,
-    }],
+    codecs: [
+      {
+        type: AudioStreamingCodecType.AAC_ELD,
+        samplerate: AudioStreamingSamplerate.KHZ_24,
+      },
+    ],
   },
 };
 
 const baseRecordingOptions: CameraRecordingOptions = {
   prebufferLength: 4000,
-  mediaContainerConfiguration: [{
-    type: MediaContainerType.FRAGMENTED_MP4,
-    fragmentLength: 8000,
-  }],
+  mediaContainerConfiguration: [
+    {
+      type: MediaContainerType.FRAGMENTED_MP4,
+      fragmentLength: 8000,
+    },
+  ],
   video: {
     type: VideoCodecType.H264,
     parameters: baseStreamingOptions.video.codec,
     resolutions: baseStreamingOptions.video.resolutions,
   },
   audio: {
-    codecs: [{
-      type: AudioRecordingCodecType.AAC_ELD,
-      audioChannels: 1,
-      bitrateMode: AudioBitrate.VARIABLE,
-      samplerate: AudioRecordingSamplerate.KHZ_48,
-    }],
+    codecs: [
+      {
+        type: AudioRecordingCodecType.AAC_ELD,
+        audioChannels: 1,
+        bitrateMode: AudioBitrate.VARIABLE,
+        samplerate: AudioRecordingSamplerate.KHZ_48,
+      },
+    ],
   },
 };
 
@@ -163,15 +171,15 @@ function buildSetupEndpointsTlv(withPorts = true): string {
 function buildMockConnection(): HAPConnection {
   return {
     localAddress: "127.0.0.1",
-    getLocalAddress: jest.fn().mockReturnValue("127.0.0.1"),
-    setMaxListeners: jest.fn(),
-    getMaxListeners: jest.fn().mockReturnValue(10),
-    on: jest.fn(),
-    removeListener: jest.fn(),
+    getLocalAddress: vi.fn().mockReturnValue("127.0.0.1"),
+    setMaxListeners: vi.fn(),
+    getMaxListeners: vi.fn().mockReturnValue(10),
+    on: vi.fn(),
+    removeListener: vi.fn(),
   } as unknown as HAPConnection;
 }
 
-describe("RTPStreamManagement", () => {
+describe("rTPStreamManagement", () => {
   describe("_handleStartStream malformed TLV (fix 34056583)", () => {
     let controller: CameraController;
 
@@ -185,13 +193,14 @@ describe("RTPStreamManagement", () => {
       controller.handleFactoryReset();
     });
 
-    test("empty video configuration should call callback with INVALID_VALUE_IN_REQUEST", () => {
+    it("empty video configuration should call callback with INVALID_VALUE_IN_REQUEST", () => {
       const rtp = controller.streamManagements[0] as RTPStreamManagement;
-      const callback = jest.fn();
+      const callback = vi.fn();
 
       // empty video/audio config — every indexed buffer access (e.g.
       // `videoParameters[VideoCodecParametersTypes.PROFILE_ID][0]`) would
       // throw without the try/catch from 34056583.
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (rtp as any)._handleStartStream({}, {}, callback);
 
@@ -199,14 +208,16 @@ describe("RTPStreamManagement", () => {
       expect(callback.mock.calls[0][0]).toBe(HAPStatus.INVALID_VALUE_IN_REQUEST);
     });
 
-    test("video configuration missing CODEC_PARAMETERS should not throw", () => {
+    it("video configuration missing CODEC_PARAMETERS should not throw", () => {
       const rtp = controller.streamManagements[0] as RTPStreamManagement;
-      const callback = jest.fn();
+      const callback = vi.fn();
 
       // SelectedVideoParametersTypes.CODEC_TYPE = 0x01 — provide that but
       // omit CODEC_PARAMETERS / ATTRIBUTES / RTP_PARAMETERS so the inner
       // `tlv.decode(undefined)` would have crashed without the guard.
-      const videoConfig = { 0x01: Buffer.from([0x00]) };
+      const videoConfig = {
+        0x01: Buffer.from([0x00]),
+      };
 
       expect(() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -220,7 +231,7 @@ describe("RTPStreamManagement", () => {
 
   describe("handleSetupEndpoints proxy rejection (fix 0ce74c4e)", () => {
     let controller: CameraController;
-    let setupSpy: jest.SpyInstance;
+    let setupSpy: MockInstance;
 
     beforeEach(() => {
       const proxyOptions: CameraStreamingOptions = {
@@ -237,8 +248,8 @@ describe("RTPStreamManagement", () => {
       controller.handleFactoryReset();
     });
 
-    test("should fail gracefully when RTPProxy.setup rejects", async () => {
-      setupSpy = jest.spyOn(RTPProxy.prototype, "setup")
+    it("should fail gracefully when RTPProxy.setup rejects", async () => {
+      setupSpy = vi.spyOn(RTPProxy.prototype, "setup")
         .mockImplementation(() => Promise.reject(new Error("socket creation failed")));
 
       const rtp = controller.streamManagements[0] as RTPStreamManagement;
@@ -253,8 +264,8 @@ describe("RTPStreamManagement", () => {
       expect(error!.message).toBe("socket creation failed");
     });
 
-    test("should set setupEndpointsResponse to ERROR status when proxy setup rejects", async () => {
-      setupSpy = jest.spyOn(RTPProxy.prototype, "setup")
+    it("should set setupEndpointsResponse to ERROR status when proxy setup rejects", async () => {
+      setupSpy = vi.spyOn(RTPProxy.prototype, "setup")
         .mockImplementation(() => Promise.reject(new Error("bind failed")));
 
       const rtp = controller.streamManagements[0] as RTPStreamManagement;
@@ -284,9 +295,9 @@ describe("RTPStreamManagement", () => {
       controller.handleFactoryReset();
     });
 
-    test("should reject a request without ports and not keep the stream busy", async () => {
+    it("should reject a request without ports and not keep the stream busy", async () => {
       const rtp = controller.streamManagements[0] as RTPStreamManagement;
-      const callback = jest.fn();
+      const callback = vi.fn();
 
       expect(() => {
         // @ts-expect-error: private method access
@@ -320,11 +331,11 @@ describe("RTPStreamManagement", () => {
     });
 
     afterEach(() => {
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
       controller.handleFactoryReset();
     });
 
-    test("should answer with an error when a delayed response is missing the audio info", async () => {
+    it("should answer with an error when a delayed response is missing the audio info", async () => {
       const rtp = controller.streamManagements[0] as RTPStreamManagement;
       const prepareStream = (_request: unknown, callback: PrepareStreamCallback) => {
         // like most plugins, call back after some asynchronous work
@@ -337,7 +348,7 @@ describe("RTPStreamManagement", () => {
           },
         }), 1);
       };
-      jest.spyOn(MockDelegate.prototype, "prepareStream").mockImplementation(prepareStream);
+      vi.spyOn(MockDelegate.prototype, "prepareStream").mockImplementation(prepareStream as () => void);
 
       const errors: Error[] = [];
       const onUncaught = (error: Error) => errors.push(error);

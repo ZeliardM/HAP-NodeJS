@@ -1,25 +1,36 @@
-import { DBusError } from "dbus-native";
-import { EventEmitter } from "events";
+import type { Mock } from "vitest";
+
+import { EventEmitter } from "node:events";
+
+import dbus, { DBusError, MessageBus } from "dbus-native";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { AvahiAdvertiser, CiaoAdvertiser, DBusInvokeError, PairingFeatureFlag, ResolvedAdvertiser, StatusFlag } from "./Advertiser";
 import { AccessoryInfo } from "./model/AccessoryInfo";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type InvokeHandler = (msg: any) => unknown;
+type InvokeHandler = (msg: any) => unknown
 
-const mockBuses: { connection: EventEmitter, invoke: jest.Mock }[] = [];
-let mockInvokeHandler: InvokeHandler = () => undefined;
+const buses: { connection: EventEmitter, invoke: Mock }[] = [];
+let invokeHandler: InvokeHandler = () => undefined;
 
-jest.mock("dbus-native", () => ({
-  ...jest.requireActual("dbus-native"),
-  systemBus: () => {
-    const connection = Object.assign(new EventEmitter(), { stream: { destroy: jest.fn() } });
-    process.nextTick(() => connection.emit("connect"));
+// Advertiser.ts calls systemBus() through dbus-native's default export, so a spy there catches every bus it opens
+function fakeSystemBus(): MessageBus {
+  const connection = Object.assign(new EventEmitter(), {
+    stream: {
+      destroy: vi.fn(),
+    },
+  });
+  process.nextTick(() => connection.emit("connect"));
+
+  const bus = {
+    connection,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bus = { connection, invoke: jest.fn(async (msg: any) => mockInvokeHandler(msg)) };
-    mockBuses.push(bus);
-    return bus;
-  },
-}));
+    invoke: vi.fn(async (msg: any) => invokeHandler(msg)),
+  };
+  buses.push(bus);
+  return bus as unknown as MessageBus;
+}
 
 function dbusError(dbusName: string, message: string): DBusError {
   const error = new DBusError(message);
@@ -27,7 +38,7 @@ function dbusError(dbusName: string, message: string): DBusError {
   return error;
 }
 
-describe(CiaoAdvertiser, () => {
+describe("ciaoAdvertiser", () => {
   describe("ff and sf", () => {
     it("should correctly format pairing feature flags", () => {
       expect(CiaoAdvertiser.ff()).toEqual(0);
@@ -55,7 +66,7 @@ describe(CiaoAdvertiser, () => {
   });
 });
 
-describe(DBusInvokeError, () => {
+describe("dBusInvokeError", () => {
   it("should take the D-Bus error name from a dbus-native DBusError", () => {
     const error = new DBusInvokeError(dbusError("org.freedesktop.DBus.Error.AccessDenied", "Access denied"));
 
@@ -64,20 +75,25 @@ describe(DBusInvokeError, () => {
   });
 });
 
-describe("D-Bus advertisers", () => {
+describe("d-Bus advertisers", () => {
   beforeEach(() => {
-    mockBuses.length = 0;
-    mockInvokeHandler = () => undefined;
+    buses.length = 0;
+    invokeHandler = () => undefined;
+    vi.spyOn(dbus, "systemBus").mockImplementation(fakeSystemBus);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("should listen for handlerError on every system bus it opens", () => {
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     try {
-      new AvahiAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"));
-      new ResolvedAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"));
+      expect(new AvahiAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"))).toBeInstanceOf(AvahiAdvertiser);
+      expect(new ResolvedAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"))).toBeInstanceOf(ResolvedAdvertiser);
 
-      expect(mockBuses).toHaveLength(2);
-      for (const bus of mockBuses) {
+      expect(buses).toHaveLength(2);
+      for (const bus of buses) {
         expect(bus.connection.listenerCount("handlerError")).toEqual(1);
         bus.connection.emit("handlerError", new Error("Rejected send message"));
       }
@@ -88,14 +104,14 @@ describe("D-Bus advertisers", () => {
   });
 
   it("should warn about a connection error on every system bus it opens instead of crashing", async () => {
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     try {
-      new AvahiAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"));
-      new ResolvedAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"));
+      expect(new AvahiAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"))).toBeInstanceOf(AvahiAdvertiser);
+      expect(new ResolvedAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"))).toBeInstanceOf(ResolvedAdvertiser);
       await new Promise(resolve => process.nextTick(resolve)); // the fake buses connect on the next tick
 
-      expect(mockBuses).toHaveLength(2);
-      for (const bus of mockBuses) {
+      expect(buses).toHaveLength(2);
+      for (const bus of buses) {
         expect(() => bus.connection.emit("error", new Error("read ECONNRESET"))).not.toThrow();
       }
       expect(warn).toHaveBeenCalledTimes(2);
@@ -106,11 +122,11 @@ describe("D-Bus advertisers", () => {
   });
 
   it("should not warn when the system bus cannot be reached while checking availability", async () => {
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     try {
       const available = AvahiAdvertiser.isAvailable();
       // fails before the fake bus connects on the next tick
-      mockBuses[0].connection.emit("error", new Error("connect ENOENT /var/run/dbus/system_bus_socket"));
+      buses[0].connection.emit("error", new Error("connect ENOENT /var/run/dbus/system_bus_socket"));
       await expect(available).resolves.toBe(false);
       expect(warn).not.toHaveBeenCalled();
     } finally {
@@ -119,15 +135,19 @@ describe("D-Bus advertisers", () => {
   });
 
   it("should read MulticastDNS from systemd-resolved as a plain value", async () => {
-    mockInvokeHandler = msg => msg.member === "Get" ? "yes" : undefined;
+    invokeHandler = msg => msg.member === "Get"
+      ? "yes"
+      : undefined;
     await expect(ResolvedAdvertiser.isAvailable()).resolves.toBe(true);
 
-    mockInvokeHandler = msg => msg.member === "Get" ? "no" : undefined;
+    invokeHandler = msg => msg.member === "Get"
+      ? "no"
+      : undefined;
     await expect(ResolvedAdvertiser.isAvailable()).resolves.toBe(false);
   });
 
   it("should point at the mDNS wiki when systemd-resolved refuses permission", async () => {
-    mockInvokeHandler = () => {
+    invokeHandler = () => {
       throw dbusError("org.freedesktop.DBus.Error.AccessDenied", "Access denied");
     };
     const advertiser = new ResolvedAdvertiser(AccessoryInfo.create("AA:BB:CC:DD:EE:FF"));

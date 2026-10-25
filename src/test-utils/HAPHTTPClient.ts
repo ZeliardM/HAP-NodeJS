@@ -1,3 +1,4 @@
+import { expect } from "vitest";
 import assert from "assert";
 import { once } from "events";
 import { HeaderObject, HTTPParser } from "http-parser-js";

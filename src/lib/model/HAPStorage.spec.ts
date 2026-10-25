@@ -1,3 +1,5 @@
+import type { MockInstance } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -71,11 +73,11 @@ describe(HAPStorage, () => {
   });
 
   describe("persist directory permissions (#1028)", () => {
-    let warnSpy: jest.SpyInstance;
+    let warnSpy: MockInstance;
     let unwritableDir: string;
 
     beforeEach(() => {
-      warnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+      warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       unwritableDir = path.join(storagePath, "perm-check");
     });
 

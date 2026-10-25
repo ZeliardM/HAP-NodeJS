@@ -1,7 +1,8 @@
+import { describe, expect, it, vi } from "vitest";
 import { findLoopbackAddress } from "./net-utils";
 import os from "os";
 
-const mock = jest.spyOn(os, "networkInterfaces");
+const mock = vi.spyOn(os, "networkInterfaces");
 
 describe("net-utils", () => {
   describe(findLoopbackAddress, () => {

@@ -1,8 +1,12 @@
+import { Buffer } from "node:buffer";
+
+import { describe, expect, it } from "vitest";
+
 import { DataStreamParser, DataStreamReader, DataStreamWriter, Float64 } from "./DataStreamParser";
 
-describe("DataStreamParser", () => {
+describe("dataStreamParser", () => {
   describe("writeNumber Int32 range check", () => {
-    test("should encode numbers in Int32 range as Int32, not Int64", () => {
+    it("should encode numbers in Int32 range as Int32, not Int64", () => {
       const writer = new DataStreamWriter();
       // 100000 is within Int32 range but was previously encoded as Int64
       writer.writeNumber(100000);
@@ -18,7 +22,7 @@ describe("DataStreamParser", () => {
       expect(decoded).toBe(100000);
     });
 
-    test("should encode max Int32 value as Int32", () => {
+    it("should encode max Int32 value as Int32", () => {
       const writer = new DataStreamWriter();
       writer.writeNumber(2147483647);
       const data = writer.getData();
@@ -30,7 +34,7 @@ describe("DataStreamParser", () => {
       expect(DataStreamParser.decode(reader)).toBe(2147483647);
     });
 
-    test("should encode min Int32 value as Int32", () => {
+    it("should encode min Int32 value as Int32", () => {
       const writer = new DataStreamWriter();
       writer.writeNumber(-2147483648);
       const data = writer.getData();
@@ -42,7 +46,7 @@ describe("DataStreamParser", () => {
       expect(DataStreamParser.decode(reader)).toBe(-2147483648);
     });
 
-    test("should encode numbers beyond Int32 range as Int64", () => {
+    it("should encode numbers beyond Int32 range as Int64", () => {
       const writer = new DataStreamWriter();
       writer.writeNumber(2147483648); // one above Int32 max
       const data = writer.getData();
@@ -56,7 +60,7 @@ describe("DataStreamParser", () => {
   });
 
   describe("readFloat64LE reader index advance", () => {
-    test("should advance reader index after reading Float64", () => {
+    it("should advance reader index after reading Float64", () => {
       const writer = new DataStreamWriter();
       writer.writeFloat64LE(new Float64(3.14));
       writer.writeFloat64LE(new Float64(2.71));
@@ -73,8 +77,8 @@ describe("DataStreamParser", () => {
     });
   });
 
-  describe("UTF-8 tag byte length", () => {
-    test("should correctly encode multi-byte UTF-8 strings", () => {
+  describe("uTF-8 tag byte length", () => {
+    it("should correctly encode multi-byte UTF-8 strings", () => {
       const writer = new DataStreamWriter();
       // "é" is 2 bytes in UTF-8 but 1 character in JS
       const testString = "é";
@@ -86,7 +90,7 @@ describe("DataStreamParser", () => {
       expect(decoded).toBe(testString);
     });
 
-    test("should round-trip short strings with multi-byte characters", () => {
+    it("should round-trip short strings with multi-byte characters", () => {
       const writer = new DataStreamWriter();
       // Mix of ASCII and multi-byte: 5 chars, 7 bytes in UTF-8
       const testString = "hëllo";
@@ -100,7 +104,7 @@ describe("DataStreamParser", () => {
   });
 
   describe("short binary data", () => {
-    test.each([0, 3, 32])("should decode %d bytes of data with the length in the tag", (length) => {
+    it.each([0, 3, 32])("should decode %d bytes of data with the length in the tag", (length) => {
       const data = Buffer.alloc(length, 0xAB);
       const writer = new DataStreamWriter();
       DataStreamParser.encode({ packet: data }, writer);
@@ -118,7 +122,7 @@ describe("DataStreamParser", () => {
       return DataStreamParser.decode(new DataStreamReader(writer.getData()));
     }
 
-    test("should round-trip a repeated string after a value encoded in the tag byte alone", () => {
+    it("should round-trip a repeated string after a value encoded in the tag byte alone", () => {
       const message = {
         streamId: 1,
         type: "ipcamera.recording",
@@ -128,7 +132,7 @@ describe("DataStreamParser", () => {
       expect(roundTrip({ a: true, b: "same-string", c: "same-string" })).toEqual({ a: true, b: "same-string", c: "same-string" });
     });
 
-    test("should not count values encoded in the tag byte alone when reading a back-reference", () => {
+    it("should not count values encoded in the tag byte alone when reading a back-reference", () => {
       // { a: true, b: <reference to index 1> }: "a" is index 0, true is not tracked, "b" is index 1
       const data = Buffer.from([
         0xE2,
@@ -142,7 +146,7 @@ describe("DataStreamParser", () => {
       expect(DataStreamParser.decode(new DataStreamReader(data))).toEqual({ a: true, b: "b" });
     });
 
-    test("should not track the empty string", () => {
+    it("should not track the empty string", () => {
       // { a: '', b: 'x', c: <reference to index 2> }: "a" is index 0, "" is not tracked, "b" is 1, "x" is 2, "c" is 3
       const data = Buffer.from([
         0xE3,
@@ -164,7 +168,7 @@ describe("DataStreamParser", () => {
       expect(writer.getData()).toEqual(data);
     });
 
-    test("should only write back-references up to index 0x20 as a single tag", () => {
+    it("should only write back-references up to index 0x20 as a single tag", () => {
       const strings = Array.from({ length: 0x30 }, (_, i) => `s${i.toString().padStart(2, "0")}`);
       const value = [
         ...strings,
