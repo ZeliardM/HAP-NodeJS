@@ -62,11 +62,12 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 - fix(accessory): compare a pairing's public key byte for byte instead of as text
 - refactor: load the service and characteristic definitions without an import cycle
 - test: migrate from jest to vitest
+- chore(lint): switch to the @antfu/eslint-config rules used by homebridge
 
 ### Homebridge Dependencies
 
-- `@homebridge/ciao` @ `v1.3.13-beta`
-- `bonjour-hap` @ `v3.10.6-beta`
+- `@homebridge/ciao` @ `v1.4.0`
+- `bonjour-hap` @ `v3.11.0`
 
 ## v2.2.3 (2026-08-22)
 
