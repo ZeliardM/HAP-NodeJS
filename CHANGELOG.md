@@ -68,6 +68,7 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 - chore: raise the minimum Node.js 22 version to 22.12.0
 - feat: migrate the package to an ES module
 - fix: stop a failed read or write throwing "HAPStatus is not defined" in the ES module build
+- docs: regenerate docs for `v2.3.0`
 
 ### Homebridge Dependencies
 
