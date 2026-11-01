@@ -1753,7 +1753,6 @@ export class Accessory extends EventEmitter {
 
       return data
     }, (reason: HAPStatus) => {
-      // @ts-expect-error: preserveConstEnums compiler option
       debug('[%s] Error getting value for characteristic "%s": %s', this.displayName, characteristic.displayName, HAPStatus[reason])
       return { status: reason }
     })
@@ -1898,7 +1897,6 @@ export class Accessory extends EventEmitter {
           status: HAPStatus.SUCCESS,
         }
       }, (status: HAPStatus) => {
-        // @ts-expect-error: forceConsistentCasingInFileNames compiler option
         debug('[%s] Error setting Characteristic "%s" to value %s: ', this.displayName, characteristic.displayName, data.value, HAPStatus[status])
 
         return { status }

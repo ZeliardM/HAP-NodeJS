@@ -115,8 +115,7 @@ export enum HDSStatus {
 /**
  * @group HomeKit Data Streams (HDS)
  */
-// eslint-disable-next-line no-restricted-syntax
-export const enum HDSProtocolSpecificErrorReason { // close reason used in the dataSend protocol
+export enum HDSProtocolSpecificErrorReason { // close reason used in the dataSend protocol
   // noinspection JSUnusedGlobalSymbols
   NORMAL = 0,
   NOT_ALLOWED = 1,

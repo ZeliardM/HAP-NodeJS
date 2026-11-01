@@ -51,8 +51,7 @@ export const enum TLVErrorCode {
 /**
  * @group HAP Accessory Server
  */
-// eslint-disable-next-line no-restricted-syntax
-export const enum HAPStatus {
+export enum HAPStatus {
   // noinspection JSUnusedGlobalSymbols
 
   /**

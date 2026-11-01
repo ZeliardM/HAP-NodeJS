@@ -67,6 +67,7 @@ All notable changes to `@homebridge/hap-nodejs` will be documented in this file.
 - chore(lint): switch to the @antfu/eslint-config rules used by homebridge
 - chore: raise the minimum Node.js 22 version to 22.12.0
 - feat: migrate the package to an ES module
+- fix: stop a failed read or write throwing "HAPStatus is not defined" in the ES module build
 
 ### Homebridge Dependencies
 

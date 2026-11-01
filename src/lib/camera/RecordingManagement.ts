@@ -1185,7 +1185,6 @@ class CameraRecordingStream extends EventEmitter implements DataStreamProtocolHa
     }
 
     debug('[HDS %s] Received DATA_SEND CLOSE for streamId %d with reason %s',
-      // @ts-expect-error: forceConsistentCasingInFileNames compiler option
       this.connection.remoteAddress, streamId, HDSProtocolSpecificErrorReason[reason])
 
     this.handleClosed(() => this.delegate.closeRecordingStream(streamId, reason))
@@ -1253,7 +1252,6 @@ class CameraRecordingStream extends EventEmitter implements DataStreamProtocolHa
     }
 
     debug('[HDS %s] Recording stream %d was closed manually with reason %s.',
-      // @ts-expect-error: forceConsistentCasingInFileNames compiler option
       this.connection.remoteAddress, this.streamId, reason ? HDSProtocolSpecificErrorReason[reason] : 'CLOSED')
 
     // the `isConsideredClosed` check just ensures that the won't ever throw here and that `handledClosed` is always executed.

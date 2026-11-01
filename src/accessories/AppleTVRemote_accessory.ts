@@ -97,13 +97,11 @@ http.createServer((request, response) => {
 
     const buttonState = parseInt(query.state as string, 10)
     const button = parseInt(query.button as string, 10)
-    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     if (ButtonState[buttonState] === undefined) {
       response.writeHead(400, { 'Content-Type': 'text/html' })
       response.end(`Bad request. Unknown button state ${escapeHTML(`${query.state}`)}`)
       return
     }
-    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     if (ButtonType[button] === undefined) {
       response.writeHead(400, { 'Content-Type': 'text/html' })
       response.end(`Bad request. Unknown button ${escapeHTML(`${query.button}`)}`)
@@ -134,7 +132,6 @@ http.createServer((request, response) => {
     }
 
     const button = parseInt(query.button as string, 10)
-    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     if (ButtonType[button] === undefined) {
       response.writeHead(400, { 'Content-Type': 'text/html' })
       response.end(`Bad request. Unknown button ${escapeHTML(`${query.button}`)}`)

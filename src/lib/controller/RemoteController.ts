@@ -67,8 +67,7 @@ const enum SupportedButtonConfigurationTypes {
 /**
  * @group Apple TV Remote
  */
-// eslint-disable-next-line no-restricted-syntax
-export const enum ButtonType {
+export enum ButtonType {
   // noinspection JSUnusedGlobalSymbols
   UNDEFINED = 0x00,
   MENU = 0x01,
@@ -138,8 +137,7 @@ const enum ButtonEvent {
 /**
  * @group Apple TV Remote
  */
-// eslint-disable-next-line no-restricted-syntax
-export const enum ButtonState {
+export enum ButtonState {
   UP = 0x00,
   DOWN = 0x01,
 }
@@ -969,7 +967,6 @@ export class RemoteController extends EventEmitter
         if (entry[ButtonConfigurationTypes.BUTTON_NAME]) {
           buttonName = entry[ButtonConfigurationTypes.BUTTON_NAME].toString()
         } else {
-          // @ts-expect-error: forceConsistentCasingInFileNames compiler option
           buttonName = ButtonType[buttonType as ButtonType]
         }
 
@@ -1656,7 +1653,6 @@ export class SiriAudioSession extends EventEmitter {
   }
 
   handleDataSendCloseEvent(reason: HDSProtocolSpecificErrorReason): void { // controller indicates he can't handle audio request currently
-    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     debug('Received close event from controller with reason %s for stream with streamId %s', HDSProtocolSpecificErrorReason[reason], this.streamId)
     if (this.state <= SiriAudioSessionState.SENDING) {
       this.stopAudioProducer()

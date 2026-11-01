@@ -1343,7 +1343,6 @@ describe('hAPServer', () => {
 
 describe('isKnownHAPStatusError', () => {
   it('should approve all defined error codes', () => {
-    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     const errorValues = Object.values(HAPStatus)
       .filter(error => typeof error === 'number') // .values will actually include both the enum values and enum names
       .filter(error => error !== 0) // filter out HAPStatus.SUCCESS
