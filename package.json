@@ -1,7 +1,7 @@
 {
   "name": "@homebridge/hap-nodejs",
   "type": "module",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "description": "HAP-NodeJS is a Node.js implementation of HomeKit Accessory Server.",
   "maintainers": [
     "Andreas Bauer <mail@anderl-bauer.de>"
